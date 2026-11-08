@@ -1,0 +1,1402 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Автономер UA</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Onest:wght@400;500;600;700&family=Unbounded:wght@700;800&display=swap">
+<style>
+/* Layout: one narrow column of asphalt panels, sticky wallet header, bottom tab bar. Single dark look by choice (night road). */
+:root{
+  --asphalt:#12151a; --panel:#1b1f26; --panel2:#232831; --line:#2c323c;
+  --ink:#eceff4; --mute:#8d96a5; --yellow:#ffd23f; --blue:#2c7be5; --flag:#0b4fb3;
+  --r0:#98a1b0; --r1:#4fbd7e; --r2:#3d8df5; --r3:#ec5fd2; --r4:#ffc93c; --r5:#ff5a5a;
+  --f-body:'Onest',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --f-disp:'Unbounded','Onest',system-ui,sans-serif;
+  --f-plate:'Barlow Condensed','Arial Narrow',Arial,sans-serif;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--asphalt);color:var(--ink);font:15px/1.45 var(--f-body);-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:var(--asphalt)}
+.wrap{max-width:560px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--asphalt);border-bottom:1px solid var(--line)}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-block:12px}
+.brand{display:flex;align-items:center;gap:8px;font:800 13px/1 var(--f-disp);letter-spacing:.02em}
+.brand i{font-style:normal;background:var(--flag);color:#fff;padding:5px 7px 4px;border-radius:4px;border-bottom:3px solid var(--yellow);font-size:12px}
+.wallet{display:flex;align-items:baseline;gap:6px;border:1px solid var(--line);background:var(--panel);border-radius:999px;padding:6px 14px 5px;font:600 21px/1 var(--f-plate);font-variant-numeric:tabular-nums}
+.wallet b{color:var(--yellow);font-weight:600}
+
+main{display:grid;gap:16px;padding-block:16px 120px}
+main>*{min-width:0}
+h2{margin:0;font:700 19px/1.2 var(--f-body)}
+.h{margin:0 0 10px;font:600 11px/1 var(--f-body);letter-spacing:.1em;text-transform:uppercase;color:var(--mute)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px}
+.hint{margin:0;color:var(--mute);font-size:14px}
+.seg{display:flex;gap:4px;background:#0f1216;border:1px solid var(--line);border-radius:10px;padding:4px}
+.seg button{flex:1;min-width:0;min-height:40px;border:0;background:none;border-radius:7px;color:var(--mute);font-weight:600;font-size:13px;cursor:pointer;padding:0 4px}
+.seg button[aria-pressed="true"]{background:var(--panel2);color:var(--ink)}
+
+/* plate */
+.plate{container-type:inline-size;width:100%;max-width:420px;margin-inline:auto}
+.frm{border-radius:3.6cqw}
+.plate[data-f] .frm{padding:1.6cqw;box-shadow:0 0 5cqw -2cqw rgba(255,255,255,.35)}
+.plate[data-f="0"] .frm{background:linear-gradient(135deg,#c9d1dc,#69737f 55%,#b8c1cd)}
+.plate[data-f="1"] .frm{background:linear-gradient(135deg,#e6ab70,#8a5527 55%,#dba06a)}
+.plate[data-f="2"] .frm{background:linear-gradient(135deg,#ffe58a,#b8860b 55%,#ffd860)}
+.plate[data-f="3"] .frm{background:linear-gradient(135deg,#f7fbff,#8ea4c4 55%,#e7f0ff)}
+.plate[data-f="4"] .frm{background:conic-gradient(from 20deg,#6ee7ff,#c9a7ff,#ff9ed2,#ffe27a,#7bffc1,#6ee7ff)}
+.pl{position:relative;overflow:hidden;display:grid;grid-template-columns:11cqw 1fr;aspect-ratio:4.6/1;background:#f5f5f0;border:.7cqw solid #16181c;border-radius:2.4cqw;box-shadow:0 .6cqw 1.6cqw rgba(0,0,0,.45),0 0 7cqw -1cqw var(--glow,transparent)}
+.plate:not([data-t="0"]){--glow:var(--rc)}
+.plate[data-t="4"] .pl,.plate[data-t="5"] .pl{box-shadow:0 .6cqw 1.6cqw rgba(0,0,0,.45),0 0 10cqw 0 var(--rc)}
+.band{background:var(--flag);display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:2cqw 0 1.6cqw;color:#fff}
+.band .flag{display:block;width:5.4cqw;height:3.6cqw;background:linear-gradient(180deg,#2f7de1 50%,#ffd500 50%);border-radius:.3cqw}
+.band b{font:700 3.8cqw/1 var(--f-plate);letter-spacing:.06em}
+.txt{display:flex;align-items:center;justify-content:center;gap:2.6cqw;font:600 20.5cqw/1 var(--f-plate);color:#111;padding-top:.8cqw;white-space:nowrap}
+.plate[data-t="4"] .pl::after,.plate[data-t="5"] .pl::after{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 38%,rgba(255,255,255,.7) 50%,transparent 62%);transform:translateX(-110%);animation:shine 3.2s ease-in-out infinite}
+.plate[data-t="5"] .pl{border-color:var(--r5)}
+@keyframes shine{60%,100%{transform:translateX(110%)}}
+.plate.pop{animation:pop .35s cubic-bezier(.2,.8,.3,1)}
+.plate.roll .pl{filter:saturate(.6) brightness(.92)}
+@keyframes pop{from{transform:scale(.93);opacity:.3}to{transform:none;opacity:1}}
+
+/* stage */
+.stage{position:relative;padding:28px 16px 52px;background:
+  repeating-linear-gradient(135deg,rgba(255,255,255,.018) 0 2px,transparent 2px 5px),var(--panel)}
+.stage::after{content:"";position:absolute;left:0;right:0;bottom:20px;height:3px;background:repeating-linear-gradient(90deg,var(--yellow) 0 24px,transparent 24px 48px);opacity:.55}
+.stmeta{margin-top:18px;display:grid;gap:10px;justify-items:center;text-align:center}
+.chips{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px}
+.chip{display:inline-block;padding:4px 11px;border-radius:999px;font:600 12px/1.3 var(--f-body);letter-spacing:.04em;color:var(--rc,var(--r0));border:1px solid color-mix(in srgb,var(--rc,var(--r0)) 55%,transparent);background:color-mix(in srgb,var(--rc,var(--r0)) 12%,transparent)}
+.reg{color:var(--mute);font-size:14px}
+.val{margin:0;color:var(--mute);font-size:13px}
+.val b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+.tags{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+.tags span{font-size:12px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);padding:3px 8px;border-radius:5px}
+.say{margin:0;color:var(--yellow);font-size:14px;font-weight:600}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:12px 18px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--ink);font-weight:600;cursor:pointer;text-align:center}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn.pri{background:var(--yellow);border-color:var(--yellow);color:#191500;font-weight:700;font-size:17px;min-height:56px}
+.btn.arm{border-color:#e5604f;color:#ff9a8c}
+.btn.sm{min-height:40px;padding:8px 14px;font-size:14px}
+.btns{display:grid;gap:10px}
+.btns.two{grid-template-columns:1fr 1fr}
+
+.stats{display:grid;grid-template-columns:repeat(3,1fr)}
+.stats div{padding:2px 0 2px 14px;border-left:1px solid var(--line);min-width:0}
+.stats div:first-child{padding-left:0;border-left:0}
+.stats span{display:block;font:600 11px/1.2 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.stats b{display:block;margin-top:4px;font:600 28px/1 var(--f-plate);font-variant-numeric:tabular-nums}
+
+.odds{display:grid}
+.odd{display:grid;grid-template-columns:14px 1fr auto 78px;gap:10px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+.odd:first-child{border-top:0}
+.odd i{width:12px;height:12px;border-radius:3px}
+.odd b{font:600 18px/1 var(--f-plate);font-variant-numeric:tabular-nums}
+.odd em{font-style:normal;text-align:right;color:var(--mute);font-variant-numeric:tabular-nums;font-size:14px}
+.note{margin:0;color:var(--mute);font-size:13px}
+.note b{color:var(--ink);font-weight:600}
+.alert{margin:0;padding:12px 14px;border:1px solid #6b3a35;background:rgba(229,96,79,.1);border-radius:10px;color:#ffb3a8;font-size:14px}
+
+/* garage + lots */
+.tools{display:grid;gap:10px}
+.fchips{display:flex;flex-wrap:wrap;gap:6px}
+.f{border:1px solid var(--line);background:transparent;color:var(--mute);border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer;min-height:34px}
+.f[aria-pressed="true"]{color:var(--ink);background:var(--panel2);border-color:var(--mute)}
+.f .dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;background:var(--rc)}
+.sorts{display:flex;gap:6px;align-items:center;color:var(--mute);font-size:13px;flex-wrap:wrap}
+.glist{display:grid;gap:12px}
+.gcard{display:grid;gap:12px;padding:14px;background:var(--panel);border:1px solid var(--line);border-radius:10px}
+.gfoot{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.gfoot .m{display:grid;gap:6px;min-width:0;flex:1 1 150px}
+.gfoot .tags{justify-content:flex-start}
+.gfoot .acts{display:grid;gap:8px}
+.picker{display:flex;flex-wrap:wrap;gap:6px;padding-top:2px}
+.empty{padding:28px 16px;text-align:center;color:var(--mute);border:1px dashed var(--line);border-radius:10px}
+.cap{display:grid;gap:8px}
+.mini{display:grid;grid-template-columns:1fr auto;gap:8px}
+.mini input{min-height:44px;font:600 22px/1 var(--f-plate);text-align:right}
+.big{font:600 28px/1 var(--f-plate);color:var(--yellow);font-variant-numeric:tabular-nums}
+
+/* create + forms */
+.form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.field{display:grid;gap:6px;min-width:0}
+.field.full{grid-column:1/-1}
+.field label{font:600 11px/1 var(--f-body);letter-spacing:.09em;text-transform:uppercase;color:var(--mute)}
+select,input{width:100%;min-height:48px;background:#0f1216;color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:16px var(--f-body)}
+input#crDigits{font:600 28px/1 var(--f-plate);letter-spacing:.14em;text-align:center}
+.price{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.price b{font:600 30px/1 var(--f-plate);color:var(--yellow);font-variant-numeric:tabular-nums}
+.warn{margin:0;color:#ff9a8c;font-size:13px;min-height:1.4em}
+
+/* upgrades */
+.branch{display:grid;gap:10px}
+.node{display:grid;gap:10px;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.node.d1{margin-left:18px;border-left:3px solid var(--blue)}
+.node.d2{margin-left:36px;border-left:3px solid var(--blue)}
+.node.lock{opacity:.55}
+.node h3{margin:0;font:600 16px/1.3 var(--f-body)}
+.node p{margin:0;color:var(--mute);font-size:13px}
+.nhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.nhead span{font:600 18px/1 var(--f-plate);color:var(--mute);font-variant-numeric:tabular-nums}
+.pips{display:flex;gap:4px;flex-wrap:wrap}
+.pips i{width:18px;height:6px;border-radius:2px;background:#2c323c}
+.pips i.on{background:var(--yellow)}
+.req{color:#ff9a8c!important}
+
+/* quests + achievements */
+.q{display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center;padding:14px 0;border-top:1px solid var(--line)}
+.q:first-child{border-top:0}
+.q h3{margin:0;font:600 15px/1.3 var(--f-body)}
+.q .bar{grid-column:1/-1}
+.q.done h3{color:var(--mute)}
+.ach{display:grid;grid-template-columns:26px 1fr auto;gap:4px 12px;align-items:start;padding:14px 0;border-top:1px solid var(--line)}
+.ach:first-child{border-top:0}
+.ach .ck{grid-row:span 3;width:24px;height:24px;border-radius:6px;border:1.5px solid var(--line);display:grid;place-items:center;font-size:14px;font-weight:700;color:#191500;margin-top:2px}
+.ach.done .ck{background:var(--yellow);border-color:var(--yellow)}
+.ach h3{margin:0;font:600 15px/1.3 var(--f-body)}
+.ach p{margin:0;grid-column:2/4;color:var(--mute);font-size:13px}
+.rw{font:600 18px/1.2 var(--f-plate);color:var(--yellow);font-variant-numeric:tabular-nums;white-space:nowrap}
+.bar{grid-column:2/4;height:6px;border-radius:3px;background:#272d37;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;background:var(--blue)}
+.done .bar i,.q.ready .bar i{background:var(--yellow)}
+.ach.done h3{color:var(--mute)}
+.pv{grid-column:2/4;font-size:12px;color:var(--mute);font-variant-numeric:tabular-nums}
+.q .pv{grid-column:auto}
+
+/* regions */
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.rt{display:grid;gap:2px;padding:12px;border:1px solid var(--line);border-radius:8px;background:var(--panel);opacity:.55;min-width:0}
+.rt.got{opacity:1;border-color:#3a4a66;background:linear-gradient(180deg,rgba(44,123,229,.14),transparent 70%),var(--panel)}
+.rt b{font:700 28px/1 var(--f-plate);letter-spacing:.06em}
+.rt span{font-size:13px;color:var(--ink);overflow-wrap:anywhere}
+.rt em{font-style:normal;font-size:12px;color:var(--mute)}
+.prog{display:grid;gap:8px}
+.prog .bar{margin:0}
+
+/* rank */
+.me{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.me b{font:600 34px/1 var(--f-plate);color:var(--yellow);font-variant-numeric:tabular-nums}
+.rk{display:grid;grid-template-columns:30px 36px 1fr auto;gap:12px;align-items:center;padding:11px 0;border-top:1px solid var(--line);cursor:pointer;width:100%;background:none;border-left:0;border-right:0;border-bottom:0;text-align:left;border-radius:0;min-height:0}
+.rkw:first-child .rk{border-top:0}
+.rk .n{font:600 22px/1 var(--f-plate);color:var(--mute);text-align:center;font-variant-numeric:tabular-nums}
+.rkw:nth-child(-n+3) .rk .n{color:var(--yellow)}
+.rk img,.rk .av{width:36px;height:36px;border-radius:50%;background:var(--panel2);object-fit:cover;display:block}
+.rk .who{min-width:0}
+.rk .who b{display:block;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rk .who span{font-size:12px;color:var(--mute)}
+.rk .sc{font:600 22px/1 var(--f-plate);font-variant-numeric:tabular-nums}
+.rkw.mine{background:linear-gradient(90deg,rgba(255,210,63,.1),transparent);margin-inline:-16px;padding-inline:16px}
+.pstat{display:grid;gap:12px;padding:4px 0 16px}
+.kvs{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.kvs div{min-width:0}
+.kvs span{display:block;font:600 11px/1.2 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--mute)}
+.kvs b{display:block;margin-top:3px;font:600 22px/1.1 var(--f-plate);font-variant-numeric:tabular-nums}
+
+/* nav + toast */
+.nav{position:fixed;left:0;right:0;bottom:0;z-index:25;background:color-mix(in srgb,var(--asphalt) 94%,transparent);border-top:1px solid var(--line);padding:6px max(6px,env(safe-area-inset-right,0px)) calc(6px + env(safe-area-inset-bottom,0px)) max(6px,env(safe-area-inset-left,0px));backdrop-filter:blur(8px)}
+.nav>div{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(6,1fr);gap:2px}
+.nav button{position:relative;display:grid;justify-items:center;gap:3px;padding:7px 0 5px;background:none;border:0;border-radius:8px;color:var(--mute);font:500 10.5px/1.1 var(--f-body);cursor:pointer;min-width:0}
+.nav svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.nav button[aria-current="page"]{color:var(--yellow)}
+.bdg{position:absolute;top:2px;left:calc(50% + 6px);background:var(--yellow);color:#191500;font:700 10px/1 var(--f-body);border-radius:9px;padding:2px 5px}
+.toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(80px + env(safe-area-inset-bottom,0px));z-index:40;display:grid;gap:8px;width:min(92vw,420px);pointer-events:none}
+.toast{background:#2a303a;border:1px solid #3b4352;border-radius:8px;padding:10px 14px;font-size:14px;box-shadow:0 6px 20px rgba(0,0,0,.4);animation:pop .25s ease-out}
+.toast.gold{border-color:var(--yellow)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+@media (max-width:380px){.form{grid-template-columns:1fr}.odd{grid-template-columns:14px 1fr auto 64px}}
+.lvl{font:600 11px/1 var(--f-body);color:var(--mute);border:1px solid var(--line);border-radius:999px;padding:4px 8px;margin-left:2px;white-space:nowrap;letter-spacing:0}
+.brand{flex-wrap:wrap}
+.chip.off{--rc:#ff7a6b}
+.gcard.offc{border-color:#6b3a35}
+.taxl{font-size:13px;color:var(--mute)}
+.taxl.soon{color:#ffb37a}
+.taxl.late{color:#ff9a8c}
+.wall{display:grid;gap:14px}
+.slot{display:grid;gap:10px;padding:14px;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+.slotE{display:grid;place-items:center;min-height:90px;border:1px dashed var(--line);border-radius:10px;color:var(--mute);font-size:14px}
+.pl.empty{background:#2a2f38}
+.pl.empty .txt{color:#8d96a5;font:600 7cqw/1 var(--f-plate);letter-spacing:.12em;text-transform:uppercase}
+.xp{display:grid;gap:8px}
+.rwd{margin:4px 0 0;font-size:13px;color:var(--yellow)}
+.pstat .wall{grid-template-columns:1fr}
+.plate[data-sp] .pl{background:var(--spbg)}
+.plate[data-sp] .txt{color:var(--spfg)}
+.spl{position:absolute;top:.9cqw;right:1.8cqw;z-index:2;font:700 3cqw/1 var(--f-plate);font-style:normal;letter-spacing:.14em;text-transform:uppercase;color:var(--spfg);opacity:.8}
+</style>
+
+<header class="top"><div class="wrap row">
+  <div class="brand"><span>Автономер</span><i>UA</i><span class="lvl" id="lvl"></span></div>
+  <div class="wallet" aria-label="Гаманець"><b>₴</b><span id="coins">0</span></div>
+</div></header>
+<main class="wrap" id="view"></main>
+<nav class="nav" aria-label="Розділи"><div id="nav"></div></nav>
+<div class="toasts" id="toasts" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const L=['A','B','C','E','H','I','K','M','O','P','T','X'];
+const ri=n=>Math.floor(Math.random()*n);
+const pick=a=>a[ri(a.length)];
+const fmt=n=>Number(n).toLocaleString('uk-UA');
+const rdg=n=>String(ri(Math.pow(10,n))).padStart(n,'0');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=x=>Math.max(0,Math.min(1e12,+x||0));
+
+/* ---------- data ---------- */
+const TIERS=[
+  {n:'Звичайний',w:74,base:20,tx:.03,days:7},
+  {n:'Незвичайний',w:19,base:80,tx:.03,days:7},
+  {n:'Рідкісний',w:5.5,base:300,tx:.04,days:7},
+  {n:'Епічний',w:1.2,base:1400,tx:.05,days:4},
+  {n:'Легендарний',w:0.28,base:7000,tx:.07,days:2},
+  {n:'Міфічний',w:0.02,base:40000,tx:.06,days:3}
+];
+const FR=[
+  {n:'Сталева',price:400,inc:60},
+  {n:'Бронзова',price:1500,inc:250},
+  {n:'Золота',price:6000,inc:1100},
+  {n:'Платинова',price:25000,inc:5500},
+  {n:'Діамантова',price:100000,inc:25000}
+];
+const REGIONS=[
+  ['Київ',['AA','KA','TA','IA']],['Київська область',['AI','KI','TI','II']],
+  ['Вінницька область',['AB','KB','TB','IB']],['Волинська область',['AC','KC','TC','IC']],
+  ['Дніпропетровська область',['AE','KE','TE','IE']],['Донецька область',['AH','KH','TH','IH']],
+  ['Житомирська область',['AM','KM','TM','IM']],['Закарпатська область',['AO','KO','TO','IO']],
+  ['Запорізька область',['AP','KP','TP','IP']],['Івано-Франківська область',['AT','KT','TT','IT']],
+  ['Харківська область',['AX','KX','TX','IX']],['АР Крим',['AK','KK','TK','IK']],
+  ['Кіровоградська область',['BA','HA','EA','OA']],['Луганська область',['BB','HB','EB','OB']],
+  ['Львівська область',['BC','HC','EC','OC']],['Миколаївська область',['BE','HE','EE','OE']],
+  ['Одеська область',['BH','HH','EH','OH']],['Полтавська область',['BI','HI','EI','OI']],
+  ['Рівненська область',['BK','HK','EK','OK']],['Сумська область',['BM','HM','EM','OM']],
+  ['Тернопільська область',['BO','HO','EO','OO']],['Херсонська область',['BT','HT','ET','OT']],
+  ['Хмельницька область',['BX','HX','EX','OX']],['Черкаська область',['CA']],
+  ['Чернігівська область',['CB']],['Чернівецька область',['CE']],['Севастополь',['CH']]
+].map(r=>({n:r[0],c:r[1]}));
+
+/* службові номери */
+const SP={
+  taxi:{n:'Таксі',t:1,w:30,bg:'#ffd23f',fg:'#111'},
+  bus:{n:'Автобус',t:1,w:30,bg:'#2d7a3e',fg:'#fff'},
+  ems:{n:'Лікарі',t:2,w:14,bg:'#f5f5f0',fg:'#c62828'},
+  army:{n:'Військові',t:2,w:10,bg:'#55612f',fg:'#f1f3e6'},
+  fire:{n:'Пожежники',t:3,w:7,bg:'#c62828',fg:'#fff'},
+  police:{n:'Поліція',t:3,w:7,bg:'#1d3a8a',fg:'#fff'},
+  dip:{n:'Дипломатичний',t:4,w:1.6,bg:'#6a2c91',fg:'#ffe9a8'},
+  gov:{n:'Уряд',t:5,w:0.4,bg:'#121212',fg:'#ffd23f'}
+};
+const SPK=Object.keys(SP),SPN=SPK.map(k=>SP[k].n),SPCH=0.04;
+const spValue=(k,c,d,s)=>Math.round(plateValue(c,d,s,SP[k].t,1)*1.5);
+function makeSpecial(){
+  let r=Math.random()*100,k=SPK[0];
+  for(const key of SPK){r-=SP[key].w;if(r<0){k=key;break}}
+  const rg=ri(REGIONS.length),c=pick(REGIONS[rg].c),d=rdg(4),s=rs();
+  return {c,d,s,t:SP[k].t,r:rg,tg:[SP[k].n],sp:k,v:spValue(k,c,d,s)};
+}
+/* ---------- rarity ---------- */
+const TG={s4:'Чотири однакові цифри',n1:'Номер №1',low:'Малий номер',seq:'Цифри по порядку',y91:'Рік Незалежності',k:'Кругла тисяча',pal:'Дзеркальний номер',abab:'Повтор пари',aabb:'Дві пари',tri:'Три однакові цифри',h:'Круглі сотні',l0:'Нулі на початку',a3:'Три цифри підряд',dbl:'Подвійна серія',mt:'Серія як код регіону'};
+function evaluate(code,dg,s){
+  const d=dg.split('').map(Number),tg=[];
+  const add=(k,t)=>tg.push({l:TG[k],t});
+  const up=d.every((x,i)=>i===0||x-d[i-1]===1), dn=d.every((x,i)=>i===0||d[i-1]-x===1);
+  if(new Set(d).size===1)add('s4',4);
+  else if(dg==='0001')add('n1',4);
+  else if(/^000\d$/.test(dg))add('low',3);
+  else if(up||dn)add('seq',3);
+  else if(dg==='1991')add('y91',2);
+  else if(/^[1-9]000$/.test(dg))add('k',2);
+  else if(d[0]===d[3]&&d[1]===d[2])add('pal',2);
+  else if(d[0]===d[2]&&d[1]===d[3])add('abab',2);
+  else if(d[0]===d[1]&&d[2]===d[3])add('aabb',2);
+  else if(/(\d)\1\1/.test(dg))add('tri',2);
+  else if(/00$/.test(dg))add('h',1);
+  else if(/^00/.test(dg))add('l0',1);
+  else if(/012|123|234|345|456|567|678|789|987|876|765|654|543|432|321|210/.test(dg))add('a3',1);
+  if(s[0]===s[1])add('dbl',1);
+  if(s===code)add('mt',2);
+  let t=tg.reduce((m,x)=>Math.max(m,x.t),0);
+  if(tg.filter(x=>x.t>=2).length>=2)t=Math.min(5,t+1);
+  return {t,tg};
+}
+function h32(str){let h=2166136261;for(let i=0;i<str.length;i++){h^=str.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+/* ринкова вартість: база рідкості, множник за номером і бонус за кількість особливостей */
+function plateValue(c,d,s,t,ntags){
+  const f=0.85+((h32(c+d+s)%1000)/1000)*0.5, ex=Math.max(0,ntags-1)*0.12;
+  return Math.max(5,Math.round(TIERS[t].base*f*(1+ex)));
+}
+const OWN_MULT=3, OWN_PRICE=10;
+const other=a=>(a+1+ri(9))%10;
+const palD=()=>{const a=ri(10),b=other(a);return ''+a+b+b+a};
+const abD=()=>{const a=ri(10),b=other(a);return ''+a+b+a+b};
+const aaD=()=>{const a=ri(10),b=other(a);return ''+a+a+b+b};
+const triD=()=>{const a=ri(10),b=other(a);return ri(2)?''+a+a+a+b:''+b+a+a+a};
+const dblL=()=>{const x=pick(L);return x+x};
+const rs=()=>{const a=pick(L);let b;do{b=pick(L)}while(b===a);return a+b};
+const G={
+  0:[()=>({d:rdg(4)})],
+  1:[()=>({d:rdg(2)+'00'}),()=>({d:'00'+rdg(2)}),
+     ()=>{const s=ri(8),t=''+s+(s+1)+(s+2);return {d:ri(2)?t+ri(10):ri(10)+t}},
+     ()=>({d:rdg(4),s:'dbl'})],
+  2:[()=>({d:triD()}),()=>({d:palD()}),()=>({d:abD()}),()=>({d:aaD()}),
+     ()=>({d:'1991'}),()=>({d:(1+ri(9))+'000'}),()=>({d:rdg(4),s:'m'})],
+  3:[()=>({d:'000'+(2+ri(8))}),
+     ()=>{const s=ri(7);return {d:''+s+(s+1)+(s+2)+(s+3)}},
+     ()=>{const s=3+ri(7);return {d:''+s+(s-1)+(s-2)+(s-3)}},
+     ()=>({d:palD(),s:'m'}),()=>({d:triD(),s:'m'})],
+  4:[()=>({d:'0001'}),()=>({d:String(1+ri(9)).repeat(4)})],
+  5:[()=>({d:'0001',s:'m'}),()=>({d:String(1+ri(9)).repeat(4),s:'m'})]
+};
+/* перевірка номера з чужих даних: усе перераховується локально */
+function safePlate(o){
+  if(!o||typeof o!=='object')return null;
+  const c=String(o.c||''),d=String(o.d||''),s=String(o.s||'');
+  if(!/^[A-Z]{2}$/.test(c)||!/^\d{4}$/.test(d)||!/^[A-Z]{2}$/.test(s))return null;
+  const r=REGIONS.findIndex(R=>R.c.indexOf(c)>=0);if(r<0)return null;
+  if(typeof o.sp==='string'&&Object.prototype.hasOwnProperty.call(SP,o.sp)){
+    return {c,d,s,t:SP[o.sp].t,r,tg:[SP[o.sp].n],v:spValue(o.sp,c,d,s),own:0,sp:o.sp};
+  }
+  const ev=evaluate(c,d,s),own=o.own?1:0,base=plateValue(c,d,s,ev.t,ev.tg.length);
+  return {c,d,s,t:ev.t,r,tg:ev.tg.map(x=>x.l),v:own?base*OWN_MULT:base,own,sp:null};
+}
+
+/* ---------- state ---------- */
+const KEY='avtonomer-ua-1';
+let S={};
+try{S=JSON.parse(localStorage.getItem(KEY))||{}}catch(e){S={}}
+S=Object.assign({coins:60,garage:[],gen:0,sold:0,custom:0,regs:[],tags:[],best:-1,maxCoins:60,ach:{},next:1,cur:null,f7:0,up:{},pend:null,auto:true,agen:true,q:null,frames:{},fb:0,bank:0,fat:Date.now(),mk:{sold:0,bought:0},slots:null,xp:0,boost:0,wq:null,taxp:0,qd:0,wd:0,fcol:0,st:0,cnt:null,sps:[],apay:true},S);
+S.mk=Object.assign({sold:0,bought:0},S.mk);
+S.garage.forEach(p=>{if(p.v==null)p.v=plateValue(p.c,p.d,p.s,p.t,(p.tg||[]).length)});
+if(S.pend){const p=S.pend;if(p.v==null)p.v=plateValue(p.c,p.d,p.s,p.t,p.tg.length);p.id=S.next++;p.at=Date.now();S.garage.unshift(p);S.pend=null}
+
+const lv=k=>S.up[k]||0;
+const cap=()=>8+2*lv('garage');
+const sellRate=()=>0.5+0.06*lv('trade')+Math.min(.1,.01*(lvlOf(S.xp)-1));
+const sellPrice=p=>Math.round(p.v*sellRate());
+const custPrice=base=>Math.round(base*OWN_PRICE*(1-0.08*lv('disc')));
+const cdMs=()=>[1600,1200,800,400][lv('speed')];
+function probs(){
+  const w=TIERS.map((t,i)=>i?t.w*(1+0.15*lv('luck')+luckBonus()):t.w), sum=w.reduce((a,b)=>a+b,0);
+  return w.map(x=>x/sum*100);
+}
+/* рамки, податки, досвід, бонуси */
+const DAYMS=24*3600e3,CAPMS=8*3600e3;
+const periodMs=p=>TIERS[p.t].days*DAYMS;
+const taxOf=p=>Math.max(1,Math.round(p.v*TIERS[p.t].tx));
+const restoreCost=p=>Math.round(taxOf(p)*1.5);
+const slotOf=p=>S.slots.findIndex(s=>s.pid===p.id);
+const frameOf=p=>{const i=slotOf(p);return i>=0?S.slots[i].f:-1};
+const incomeOf=p=>{const f=frameOf(p);return (f>=0&&!p.off)?Math.round(FR[f].inc*(1+0.3*p.t)):0};
+const rate=()=>S.garage.reduce((s,p)=>s+incomeOf(p),0);
+function settle(){const now=Date.now(),el=Math.max(0,Math.min(now-S.fat,CAPMS));S.bank+=rate()*el/3.6e6;S.fat=now}
+const bankNow=()=>S.bank+rate()*Math.max(0,Math.min(Date.now()-S.fat,CAPMS))/3.6e6;
+function releaseFrame(p){const i=slotOf(p);if(i>=0)S.slots[i].pid=null}
+function frameWorth(){let w=0;FR.forEach((f,i)=>{w+=f.price*(S.frames[i]||0)});S.slots.forEach(s=>{if(s.f>=0)w+=FR[s.f].price});return w}
+const luckBonus=()=>Math.min(.25,S.garage.reduce((s,p)=>s+(p.off?0:[0,0,.005,.01,.02,.04][p.t]),0));
+const boostOn=()=>S.boost>Date.now();
+const lvlOf=xp=>Math.floor((1+Math.sqrt(1+xp/12.5))/2);
+const lvl=()=>lvlOf(S.xp);
+const score=()=>S.coins+Math.floor(bankNow())+S.garage.reduce((s,p)=>s+p.v,0)+frameWorth();
+function addXp(n){
+  const a=lvl();S.xp+=n;const b=lvl();
+  if(b>a){const g=100*b;S.coins+=g;toast('Рівень '+b+' · +'+fmt(g)+' ₴',true)}
+}
+function hdr(){
+  const el=$('#lvl');
+  if(el)el.textContent='Рів. '+lvl()+(boostOn()?' · ×2 ще '+Math.ceil((S.boost-Date.now())/60000)+' хв':'');
+}
+/* міграція збережених даних */
+if(!Array.isArray(S.slots)||S.slots.length!==3)S.slots=[{f:-1,pid:null},{f:-1,pid:null},{f:-1,pid:null}];
+S.slots=S.slots.map(s=>({f:Number.isInteger(s&&s.f)?s.f:-1,pid:(s&&s.pid)||null}));
+if(!Array.isArray(S.cnt)||S.cnt.length!==6)S.cnt=[0,0,0,0,0,0];
+S.garage.forEach(p=>{
+  if(p.due==null){p.due=Date.now()+periodMs(p);p.off=0}
+  if(p.fr!=null&&p.fr>=0){
+    const sl=S.slots.find(x=>x.f<0&&!x.pid);
+    if(sl){sl.f=p.fr;sl.pid=p.id}else S.frames[p.fr]=(S.frames[p.fr]||0)+1;
+  }
+  p.fr=null;
+});
+const UPG=[
+  {k:'garage',t:'Місткість гаража',max:10,cost:[150,300,600,1200,2500,5000,10000,20000,40000,80000],req:null,d:0,
+   txt:()=>'+2 місця за рівень. Зараз '+cap()+' місць.'},
+  {k:'luck',t:'Удача',max:5,cost:[500,1500,4500,12000,30000],req:['garage',2],d:1,
+   txt:()=>'Шанс на кращі номери +15% за рівень. Зараз +'+(15*lv('luck'))+'%.'},
+  {k:'trade',t:'Торгівля',max:5,cost:[300,1000,3000,9000,25000],req:null,d:0,
+   txt:()=>'Продаж за ринковою ціною: +6% за рівень. Зараз '+Math.round(sellRate()*100)+'%.'},
+  {k:'speed',t:'Швидка реєстрація',max:3,cost:[600,2500,10000],req:['trade',1],d:1,
+   txt:()=>'Коротша пауза між номерами. Зараз '+(cdMs()/1000).toLocaleString('uk-UA')+' с.'},
+  {k:'disc',t:'Знижка на свої номери',max:4,cost:[700,2500,8000,20000],req:['speed',1],d:2,
+   txt:()=>'−8% до ціни складеного номера за рівень. Зараз −'+(8*lv('disc'))+'%.'},
+  {k:'auto',t:'Автопродаж',max:3,cost:[800,6000,30000],req:['trade',2],d:1,
+   txt:()=>'Продає номери самі. Рівень 1: звичайні, 2: ще й незвичайні, 3: ще й рідкісні.'},
+  {k:'acct',t:'Бухгалтер',max:2,cost:[1200,10000],req:['trade',2],d:1,
+   txt:()=>'Сам сплачує податки за добу до строку, поки сторінка відкрита. Рівень 1: звичайні, незвичайні й рідкісні номери, рівень 2: усі.'},
+  {k:'agen',t:'Авто-генерація',max:3,cost:[1500,8000,35000],req:['auto',1],d:2,
+   txt:()=>'Сама генерує номери, поки сторінка відкрита й у гаражі є місце. Зараз: '+(lv('agen')?'кожні '+[10,6,3][lv('agen')-1]+' с':'вимкнено')+'.'}
+];
+const UNAME={garage:'Гараж',trade:'Торгівля',speed:'Швидка реєстрація',luck:'Удача',disc:'Знижка',auto:'Автопродаж',agen:'Авто-генерація',acct:'Бухгалтер'};
+
+/* ---------- quests ---------- */
+const QPOOL=[
+  {k:'gen',g:[15,30,60],r:[250,550,1200],t:g=>'Згенеруй номерів: '+g},
+  {k:'sell',g:[5,10,20],r:[200,450,900],t:g=>'Продай номерів: '+g},
+  {k:'earn',g:[500,2000,6000],r:[200,500,1200],t:g=>'Заробіти на продажах: '+fmt(g)+' ₴'},
+  {k:'unc',g:[3,6,12],r:[250,500,1000],t:g=>'Знайди незвичайних або кращих номерів: '+g},
+  {k:'rare',g:[1,2],r:[600,1500],t:g=>'Знайди рідкісних або кращих номерів: '+g},
+  {k:'custom',g:[1],r:[900],t:g=>'Купи номер власного складу'},
+  {k:'tax',g:[1,3],r:[300,700],t:g=>'Сплати податків: '+g}
+];
+const WPOOL=[
+  {k:'gen',g:[150,300],rw:[{c:3000,xp:120,bm:20},{c:7000,xp:260,pl:2}],t:g=>'Згенеруй номерів за тиждень: '+g},
+  {k:'sell',g:[60,120],rw:[{c:2500,xp:100,bm:20},{c:6000,xp:240,fr:1}],t:g=>'Продай номерів: '+g},
+  {k:'earn',g:[15000,50000],rw:[{c:4000,xp:140},{c:12000,xp:320,pl:2}],t:g=>'Заробіти на продажах: '+fmt(g)+' ₴'},
+  {k:'rare',g:[5,10],rw:[{c:4500,xp:180,bm:30},{c:11000,xp:360,pl:3}],t:g=>'Знайди рідкісних або кращих номерів: '+g},
+  {k:'epic',g:[1,2],rw:[{c:8000,xp:300,pl:3},{c:20000,xp:600,pl:4}],t:g=>'Знайди епічних або кращих номерів: '+g},
+  {k:'custom',g:[2,4],rw:[{c:5000,xp:200,bm:30},{c:14000,xp:420,fr:2}],t:g=>'Купи власних номерів: '+g},
+  {k:'tax',g:[6,14],rw:[{c:3000,xp:150,bm:20},{c:8000,xp:300,fr:1}],t:g=>'Сплати податків: '+g},
+  {k:'mkt',g:[2,5],rw:[{c:4000,xp:160,bm:30},{c:10000,xp:340,pl:2}],t:g=>'Угод на ринку, купівля або продаж: '+g}
+];
+function rwText(r){
+  const a=[];
+  if(r.c)a.push(fmt(r.c)+' ₴');
+  if(r.xp)a.push(fmt(r.xp)+' досвіду');
+  if(r.pl!=null)a.push(TIERS[r.pl].n+' номер');
+  if(r.fr!=null)a.push(FR[r.fr].n+' рамка');
+  if(r.bm)a.push('×2 на '+r.bm+' хв');
+  return a.join(' · ');
+}
+const dayKey=()=>{const d=new Date();return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+const weekKey=()=>{const d=new Date();d.setDate(d.getDate()-((d.getDay()+6)%7));return d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()};
+function buildList(pool,n,mk){
+  const ks=pool.slice(),list=[];
+  while(list.length<n){
+    const P=ks.splice(ri(ks.length),1)[0],j=ri(P.g.length);
+    list.push(Object.assign({k:P.k,g:P.g[j],p:0,c:0},mk(P,j)));
+  }
+  return list;
+}
+function ensureQ(){
+  if(!S.q||S.q.day!==dayKey()){
+    S.q={day:dayKey(),list:buildList(QPOOL,3,(P,j)=>{const c=P.r[j],rw={c,xp:Math.round(c/8)};if(ri(4)===0)rw.bm=15;return {rw}})};
+  }
+  S.q.list.forEach(q=>{if(!q.rw)q.rw={c:q.r||0,xp:Math.round((q.r||0)/8)}});
+  if(!S.wq||S.wq.wk!==weekKey()){
+    S.wq={wk:weekKey(),list:buildList(WPOOL,3,(P,j)=>({rw:Object.assign({},P.rw[j])}))};
+  }
+}
+function qAdd(k,n){
+  ensureQ();
+  [S.q,S.wq].forEach(Q=>Q.list.forEach(q=>{
+    if(q.k===k&&!q.c&&q.p<q.g){
+      q.p=Math.min(q.g,q.p+n);
+      if(q.p>=q.g)toast('Завдання виконано. Забери нагороду у вкладці «Завдання».',true);
+    }
+  }));
+}
+const claimable=()=>{ensureQ();return S.q.list.filter(q=>q.p>=q.g&&!q.c).length+S.wq.list.filter(q=>q.p>=q.g&&!q.c).length};
+function giveReward(r){
+  if(r.c)S.coins+=r.c;
+  if(r.fr!=null)S.frames[r.fr]=(S.frames[r.fr]||0)+1;
+  if(r.bm)S.boost=Math.max(S.boost,Date.now())+r.bm*60000;
+  if(r.pl!=null){const p=makePlate(r.pl);discover(p);S.cnt[p.t]++;toGarage(p);toast('Номер у нагороду: '+p.c+' '+p.d+' '+p.s,true)}
+  if(r.xp)addXp(r.xp);
+}
+
+/* ---------- achievements ---------- */
+const cntFrom=t=>S.cnt.slice(t).reduce((a,b)=>a+b,0);
+const ACH=[
+  {id:'first',t:'Перший номер',d:'Згенеруй свій перший номер.',g:1,v:()=>S.gen,r:50},
+  {id:'gen100',t:'Сотня',d:'Згенеруй 100 номерів.',g:100,v:()=>S.gen,r:300},
+  {id:'gen1000',t:'Тисяча',d:'Згенеруй 1 000 номерів.',g:1000,v:()=>S.gen,r:2000},
+  {id:'gen5000',t:'Конвеєр',d:'Згенеруй 5 000 номерів.',g:5000,v:()=>S.gen,r:9000},
+  {id:'custom',t:'Свій номер',d:'Купи номер, який склав сам.',g:1,v:()=>S.custom,r:100},
+  {id:'custom10',t:'Конструктор',d:'Купи 10 своїх номерів.',g:10,v:()=>S.custom,r:2500},
+  {id:'rare',t:'Рідкісна знахідка',d:'Отримай рідкісний номер.',g:1,v:()=>S.best>=2?1:0,r:200},
+  {id:'epic',t:'Епічний улов',d:'Отримай епічний номер.',g:1,v:()=>S.best>=3?1:0,r:800},
+  {id:'legend',t:'Легенда дороги',d:'Отримай легендарний номер.',g:1,v:()=>S.best>=4?1:0,r:4000},
+  {id:'myth',t:'Міф',d:'Отримай міфічний номер.',g:1,v:()=>S.best>=5?1:0,r:25000},
+  {id:'unc100',t:'Мисливець',d:'Знайди 100 номерів вище за звичайний.',g:100,v:()=>cntFrom(1),r:1500},
+  {id:'rare25',t:'Колекція рідкостей',d:'Знайди 25 рідкісних і кращих номерів.',g:25,v:()=>cntFrom(2),r:3000},
+  {id:'epic5',t:'Епічна серія',d:'Знайди 5 епічних і кращих номерів.',g:5,v:()=>cntFrom(3),r:6000},
+  {id:'mirror',t:'Дзеркало',d:'Знайди дзеркальний номер, наприклад 1331.',g:1,v:()=>S.tags.indexOf(TG.pal)>=0?1:0,r:200},
+  {id:'sevens',t:'Щасливі сімки',d:'Отримай номер із трьома сімками підряд.',g:1,v:()=>S.f7?1:0,r:300},
+  {id:'y91',t:'Рік Незалежності',d:'Отримай номер із цифрами 1991.',g:1,v:()=>S.tags.indexOf(TG.y91)>=0?1:0,r:400},
+  {id:'tags8',t:'Знавець комбінацій',d:'Знайди 8 різних особливостей номера.',g:8,v:()=>S.tags.length,r:800},
+  {id:'tags13',t:'Професор номерів',d:'Знайди 13 різних особливостей номера.',g:13,v:()=>S.tags.length,r:3000},
+  {id:'reg10',t:'Мандрівник',d:'Знайди номери з 10 різних регіонів.',g:10,v:()=>S.regs.length,r:300},
+  {id:'reg15',t:'Півкраїни',d:'Знайди номери з 15 регіонів.',g:15,v:()=>S.regs.length,r:800},
+  {id:'reg27',t:'Уся країна',d:'Збери номери з усіх 27 регіонів.',g:27,v:()=>S.regs.length,r:3000},
+  {id:'sold50',t:'Дилер',d:'Продай 50 номерів.',g:50,v:()=>S.sold,r:400},
+  {id:'sold500',t:'Магнат',d:'Продай 500 номерів.',g:500,v:()=>S.sold,r:4000},
+  {id:'toState',t:'Державна справа',d:'Продай державі номер, знятий з обліку.',g:1,v:()=>S.st,r:100},
+  {id:'taxp1',t:'Платник',d:'Сплати перший податок.',g:1,v:()=>S.taxp,r:150},
+  {id:'taxp50',t:'Сумлінний платник',d:'Сплати 50 податків.',g:50,v:()=>S.taxp,r:1500},
+  {id:'taxp300',t:'Опора бюджету',d:'Сплати 300 податків.',g:300,v:()=>S.taxp,r:8000},
+  {id:'frame',t:'У рамці',d:'Купи першу рамку.',g:1,v:()=>S.fb,r:200},
+  {id:'wall',t:'Повна вітрина',d:'Заповни номерами всі 3 слоти вітрини.',g:3,v:()=>S.slots.filter(s=>s.pid).length,r:800},
+  {id:'dia',t:'Діамантова вітрина',d:'Постав діамантову рамку у слот.',g:1,v:()=>S.slots.some(s=>s.f===4)?1:0,r:5000},
+  {id:'fcol',t:'Рамки працюють',d:'Забери з рамок 10 000 ₴ сумарно.',g:10000,v:()=>S.fcol,r:1000},
+  {id:'fcol2',t:'Рантьє',d:'Забери з рамок 250 000 ₴ сумарно.',g:250000,v:()=>S.fcol,r:6000},
+  {id:'garage',t:'Просторий гараж',d:'Прокачай гараж до 5 рівня.',g:5,v:()=>lv('garage'),r:500},
+  {id:'garage10',t:'Гаражний барон',d:'Прокачай гараж до 10 рівня.',g:10,v:()=>lv('garage'),r:15000},
+  {id:'luck5',t:'Щасливчик',d:'Прокачай удачу до 5 рівня.',g:5,v:()=>lv('luck'),r:5000},
+  {id:'lvl5',t:'Водій',d:'Досягни 5 рівня.',g:5,v:()=>lvl(),r:500},
+  {id:'lvl10',t:'Профі',d:'Досягни 10 рівня.',g:10,v:()=>lvl(),r:2500},
+  {id:'lvl20',t:'Майстер дороги',d:'Досягни 20 рівня.',g:20,v:()=>lvl(),r:10000},
+  {id:'buy1',t:'Покупець ринку',d:'Купи номер на ринку.',g:1,v:()=>S.mk.bought,r:300},
+  {id:'trader',t:'Торговець',d:'Продай номер іншому гравцю на ринку.',g:1,v:()=>S.mk.sold,r:500},
+  {id:'sell10m',t:'Постачальник',d:'Продай 10 номерів на ринку.',g:10,v:()=>S.mk.sold,r:2000},
+  {id:'q10',t:'Виконавець',d:'Виконай 10 щоденних завдань.',g:10,v:()=>S.qd,r:600},
+  {id:'w1',t:'Тижневий план',d:'Виконай тижневе завдання.',g:1,v:()=>S.wd,r:800},
+  {id:'w10',t:'Планувальник',d:'Виконай 10 тижневих завдань.',g:10,v:()=>S.wd,r:6000},
+  {id:'rich',t:'Багатій',d:'Накопич 25 000 ₴ на рахунку.',g:25000,v:()=>S.maxCoins,r:1500},
+  {id:'rich2',t:'Заможний',d:'Накопич 250 000 ₴ на рахунку.',g:250000,v:()=>S.maxCoins,r:6000},
+  {id:'spAny',t:'Службовий номер',d:'Отримай номер служби: таксі, автобус, лікарі, поліція та інші.',g:1,v:()=>S.sps.length,r:300},
+  {id:'sp4',t:'Служби міста',d:'Збери номери 4 різних служб.',g:4,v:()=>S.sps.length,r:2000},
+  {id:'spAll',t:'Усі служби',d:'Збери номери всіх 8 служб.',g:8,v:()=>S.sps.length,r:15000},
+  {id:'spPol',t:'Закон і порядок',d:'Отримай поліцейський номер.',g:1,v:()=>S.sps.indexOf('police')>=0?1:0,r:800},
+  {id:'spGov',t:'Влада',d:'Отримай урядовий номер.',g:1,v:()=>S.sps.indexOf('gov')>=0?1:0,r:30000},
+  {id:'cap1m',t:'Мільйонер',d:'Доведи капітал до 1 000 000 ₴.',g:1000000,v:()=>score(),r:20000}
+];
+function toast(msg,gold){
+  const el=document.createElement('div');el.className='toast'+(gold?' gold':'');el.textContent=msg;
+  const box=$('#toasts');box.appendChild(el);
+  while(box.children.length>3)box.removeChild(box.firstChild);
+  setTimeout(()=>{if(el.parentNode)el.parentNode.removeChild(el)},3200);
+}
+function check(){
+  let any=false;
+  ACH.forEach(a=>{
+    if(!S.ach[a.id]&&a.v()>=a.g){S.ach[a.id]=1;S.coins+=a.r;addXp(40);any=true;toast('Досягнення «'+a.t+'» · +'+fmt(a.r)+' ₴',true)}
+  });
+  S.maxCoins=Math.max(S.maxCoins,S.coins);
+  if(any)check();
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}schedulePush()}
+
+/* ---------- game logic ---------- */
+function makePlate(ft){
+  if(ft==null&&Math.random()<SPCH)return makeSpecial();
+  let t=0;
+  if(ft!=null)t=ft;
+  else{const pr=probs();let r=Math.random()*100;for(;t<5;t++){r-=pr[t];if(r<0)break}}
+  for(let i=0;i<400;i++){
+    const o=pick(G[t])(),rg=ri(REGIONS.length),c=pick(REGIONS[rg].c);
+    const s=o.s==='dbl'?dblL():o.s==='m'?c:rs();
+    const ev=evaluate(c,o.d,s);
+    if(ev.t===t||i===399){
+      return {c,d:o.d,s,t:ev.t,r:rg,tg:ev.tg.map(x=>x.l),v:plateValue(c,o.d,s,ev.t,ev.tg.length)};
+    }
+  }
+}
+function discover(p){
+  if(S.regs.indexOf(p.r)<0)S.regs.push(p.r);
+  p.tg.forEach(l=>{if(S.tags.indexOf(l)<0&&SPN.indexOf(l)<0)S.tags.push(l)});if(p.sp&&S.sps.indexOf(p.sp)<0)S.sps.push(p.sp);
+  if(p.d.indexOf('777')>=0)S.f7=1;
+  S.best=Math.max(S.best,p.t);
+}
+function toGarage(p){p.id=S.next++;p.at=Date.now();p.off=0;p.due=Date.now()+periodMs(p);S.garage.unshift(p)}
+function payout(p){
+  const g=Math.round(sellPrice(p)*(boostOn()?2:1));
+  S.coins+=g;S.sold++;qAdd('sell',1);qAdd('earn',g);return g;
+}
+function sellGarage(id){
+  const i=S.garage.findIndex(p=>p.id===id);if(i<0)return;
+  settle();
+  const p=S.garage[i];releaseFrame(p);S.garage.splice(i,1);
+  const g=payout(p);
+  if(S.cur===id)S.cur=null;
+  check();save();
+  toast('Продано '+p.c+' '+p.d+' '+p.s+' · +'+fmt(g)+' ₴');
+}
+/* податки */
+const taxDue=()=>S.garage.filter(p=>!p.off&&p.due-Date.now()<=DAYMS);
+const taxWarn=()=>S.garage.filter(p=>p.off||p.due-Date.now()<=12*3600e3).length;
+function payTax(id){
+  const p=S.garage.find(x=>x.id===id);if(!p||p.off)return;
+  if(p.due-Date.now()>2*periodMs(p)){toast('Наперед можна сплатити не більше ніж на три періоди.');return}
+  const t=taxOf(p);
+  if(S.coins<t){toast('Не вистачає грошей.');return}
+  S.coins-=t;p.due+=periodMs(p);S.taxp++;qAdd('tax',1);check();save();
+  toast('Податок сплачено · −'+fmt(t)+' ₴');
+}
+function payAllTax(ahead){
+  const list=(ahead?S.garage.filter(p=>!p.off&&p.due-Date.now()<=periodMs(p)):taxDue()).sort((a,b)=>a.due-b.due);
+  let n=0,sum=0;
+  for(const p of list){
+    const t=taxOf(p);if(S.coins<t)break;
+    S.coins-=t;p.due+=periodMs(p);S.taxp++;qAdd('tax',1);n++;sum+=t;
+  }
+  if(n){check();save();toast('Сплачено податків: '+n+' · −'+fmt(sum)+' ₴')}
+  else toast('Не вистачає грошей.');
+}
+function restorePlate(id){
+  const p=S.garage.find(x=>x.id===id);if(!p||!p.off)return;
+  const c=restoreCost(p);
+  if(S.coins<c){toast('Не вистачає грошей.');return}
+  S.coins-=c;p.off=0;p.due=Date.now()+periodMs(p);
+  check();save();toast('Номер відновлено · −'+fmt(c)+' ₴',true);
+}
+function stateSell(id){
+  const i=S.garage.findIndex(p=>p.id===id);if(i<0||!S.garage[i].off)return;
+  const p=S.garage[i],g=Math.round(p.v*0.5);
+  S.garage.splice(i,1);if(S.cur===id)S.cur=null;
+  S.coins+=g;S.sold++;S.st++;qAdd('sell',1);qAdd('earn',g);
+  check();save();toast('Продано державі · +'+fmt(g)+' ₴');
+}
+function taxTick(){
+  const now=Date.now();
+  if(lv('acct')>0&&S.apay){
+    let n=0,sum=0;
+    S.garage.forEach(p=>{
+      if(p.off||p.due-now>DAYMS||(lv('acct')<2&&p.t>2))return;
+      const t=taxOf(p);if(S.coins<t)return;
+      S.coins-=t;p.due+=periodMs(p);S.taxp++;n++;sum+=t;qAdd('tax',1);
+    });
+    if(n){check();save();toast('Бухгалтер сплатив податків: '+n+' · −'+fmt(sum)+' ₴')}
+  }
+  const late=S.garage.filter(p=>!p.off&&p.due<=now);
+  if(!late.length)return;
+  settle();
+  late.forEach(p=>{p.off=1;const i=slotOf(p);if(i>=0)S.slots[i].pid=null});
+  save();toast('Знято з обліку номерів: '+late.length+'. Відновлення у вкладці «Гараж».',true);
+  if(tab==='garage'||tab==='gen')softRender();else renderNav();
+}
+/* вітрина */
+function setFrame(i,f){
+  const sl=S.slots[i];
+  if(!sl||(S.frames[f]||0)<=0)return;
+  settle();
+  if(sl.f>=0)S.frames[sl.f]=(S.frames[sl.f]||0)+1;
+  S.frames[f]--;sl.f=f;wallPick=null;
+}
+function setPlate(i,id){
+  const sl=S.slots[i],p=S.garage.find(x=>x.id===id);
+  if(!sl||!p||p.off||sl.f<0)return;
+  settle();
+  const old=slotOf(p);if(old>=0)S.slots[old].pid=null;
+  sl.pid=id;wallPick=null;
+}
+const canGen=()=>!busy&&Date.now()>=cdUntil&&S.garage.length<cap();
+
+/* ---------- views ---------- */
+const plateHTML=(c,d,s,t,cls,fr,sp)=>'<div class="plate '+(cls||'')+'" data-t="'+t+'"'+((fr!=null&&fr>=0)?' data-f="'+fr+'"':'')+((sp&&SP[sp])?' data-sp="'+sp+'" style="--rc:var(--r'+t+');--spbg:'+SP[sp].bg+';--spfg:'+SP[sp].fg+'"':' style="--rc:var(--r'+t+')"')+'><div class="frm"><div class="pl">'+((sp&&SP[sp])?'<em class="spl">'+SP[sp].n+'</em>':'')+'<div class="band"><i class="flag"></i><b>UA</b></div><div class="txt"><span>'+c+'</span><span>'+d+'</span><span>'+s+'</span></div></div></div></div>';
+const tagsHTML=a=>a&&a.length?'<div class="tags">'+a.map(x=>'<span>'+esc(x)+'</span>').join('')+'</div>':'';
+const chipHTML=t=>'<span class="chip" style="--rc:var(--r'+t+')">'+TIERS[t].n+'</span>';
+const segHTML=(grp,items,cur)=>'<div class="seg">'+items.map(i=>'<button type="button" data-act="sub" data-g="'+grp+'" data-k="'+i[0]+'" aria-pressed="'+(cur===i[0])+'">'+i[1]+'</button>').join('')+'</div>';
+const platePH=p=>plateHTML(p.c,p.d,p.s,p.t,'',-1,p.sp);
+
+let tab='gen',sub={garage:'list',quest:'daily',market:'browse'},gf=-1,gs='new',gshow=30,busy=false,tmp=null,cdUntil=0,cdTimer=null,fpick=null;
+
+function viewGen(){
+  const cur=S.garage.find(p=>p.id===S.cur);
+  let p=null,mode='';
+  if(tmp){p=tmp.p;mode='auto'}else if(cur){p=cur;mode='kept'}
+  const show=p||{c:'AI',d:'4817',s:'KX',t:0,tg:[]};
+  let meta;
+  if(p){
+    meta='<div class="chips">'+chipHTML(p.t)+'<span class="reg">'+REGIONS[p.r].n+' · '+p.c+'</span></div>'+tagsHTML(p.tg)
+      +'<p class="val">Ринкова ціна <b>'+fmt(p.v)+' ₴</b> · продаж <b>'+fmt(sellPrice(p))+' ₴</b></p>';
+    if(mode==='auto')meta+='<p class="say">Продано автоматично · +'+fmt(tmp.gain)+' ₴</p>';
+  }else meta='<p class="hint">Так виглядає номер. Натисни «Згенерувати», щоб отримати перший.</p>';
+  const full=S.garage.length>=cap();
+  let acts='<button class="btn pri" type="button" data-act="gen" id="genBtn">Згенерувати номер</button>';
+  if(full)acts+='<p class="alert">Гараж повний: '+S.garage.length+' із '+cap()+'. Генерація відкриється, коли з\'явиться вільне місце. Продай номери або розшир гараж у «Прокачці».</p><button class="btn" type="button" data-act="tab" data-tab="garage">Перейти до гаража</button>';
+  if(mode==='kept'&&!p.off)acts+='<button class="btn" type="button" data-act="sell" data-id="'+p.id+'">Продати за '+fmt(sellPrice(p))+' ₴</button>';
+  const tg=[];
+  if(lv('auto')>0)tg.push('<button class="btn sm" type="button" data-act="autotoggle">Автопродаж: '+(S.auto?'увімкнено':'вимкнено')+'</button>');
+  if(lv('agen')>0)tg.push('<button class="btn sm" type="button" data-act="agentoggle">Авто-генерація: '+(S.agen?'увімкнено':'вимкнено')+'</button>');
+  if(lv('acct')>0)tg.push('<button class="btn sm" type="button" data-act="apaytoggle">Бухгалтер: '+(S.apay?'увімкнено':'вимкнено')+'</button>');
+  const pr=probs();
+  const odds=TIERS.map((t,i)=>'<div class="odd"><i style="background:var(--r'+i+')"></i><span>'+t.n+'</span><b>'+pr[i].toLocaleString('uk-UA',{maximumFractionDigits:2})+' %</b><em>≈ '+fmt(t.base)+' ₴</em></div>').join('');
+  return ''
+  +'<section class="panel stage"><div id="host">'+plateHTML(show.c,show.d,show.s,show.t,'',(show.id?frameOf(show):-1),show.sp)+'</div><div class="stmeta">'+meta+'</div></section>'
+  +'<div class="btns">'+acts+(tg.length?'<div class="btns two">'+tg.join('')+'</div>':'')+'</div>'
+  +'<section class="panel"><div class="stats"><div><span>Згенеровано</span><b>'+fmt(S.gen)+'</b></div><div><span>Гараж</span><b>'+S.garage.length+'/'+cap()+'</b></div><div><span>Капітал</span><b>'+fmt(score())+'</b></div></div></section>'
+  +'<section class="panel"><p class="h">Шанси та ринкова ціна</p>'+(luckBonus()>0?'<p class="note" style="margin-bottom:8px">Удача від зареєстрованих номерів: +'+Math.round(luckBonus()*100)+'%</p>':'')+'<div class="odds">'+odds+'</div></section>'
+  +'<p class="note"><b>Формат номера:</b> код регіону, чотири цифри, серія. На українських номерах лише 12 латинських літер: A B C E H I K M O P T X. Коди регіонів у грі взяті зі старої серії, тому на реальних номерах вони можуть відрізнятися.</p>';
+}
+
+let wallPick=null;
+function daysTxt(ms){
+  if(ms<=0)return 'прострочено';
+  const d=Math.floor(ms/DAYMS),h=Math.ceil((ms%DAYMS)/3600e3);
+  return d>0?d+' д '+h+' г':h+' г';
+}
+function taxLine(p){
+  if(p.off)return '<span class="taxl late">Знято з обліку: без удачі, доходу рамки й продажу на ринку</span>';
+  const left=p.due-Date.now();
+  return '<span class="taxl'+(left<=DAYMS?' soon':'')+'">Податок '+fmt(taxOf(p))+' ₴ · через '+daysTxt(left)+'</span>';
+}
+const emptyFrame=f=>'<div class="plate" data-f="'+f+'"><div class="frm"><div class="pl empty"><div class="band"><i class="flag"></i><b>UA</b></div><div class="txt">порожньо</div></div></div></div>';
+
+function viewGarage(){
+  const head=segHTML('garage',[['list','Номери'],['create','Свій'],['frames','Вітрина'],['regions','Регіони']],sub.garage);
+  if(sub.garage==='create')return head+viewCreate();
+  if(sub.garage==='frames')return head+viewFrames();
+  if(sub.garage==='regions')return head+viewRegions();
+  let list=S.garage.filter(p=>gf<0||p.t===gf);
+  if(gs==='rare')list=list.slice().sort((a,b)=>b.t-a.t||b.v-a.v);
+  if(gs==='tax')list=list.slice().sort((a,b)=>(a.off?-1:0)-(b.off?-1:0)||a.due-b.due);
+  const total=S.garage.reduce((s,p)=>s+p.v,0);
+  const commons=S.garage.filter(p=>p.t===0&&!p.off),cv=commons.reduce((s,p)=>s+sellPrice(p),0);
+  const chips='<button class="f" type="button" data-act="filter" data-t="-1" aria-pressed="'+(gf<0)+'">Усі '+S.garage.length+'</button>'
+    +TIERS.map((t,i)=>{
+      const n=S.garage.filter(p=>p.t===i).length;
+      return n?'<button class="f" type="button" data-act="filter" data-t="'+i+'" aria-pressed="'+(gf===i)+'" style="--rc:var(--r'+i+')"><span class="dot"></span>'+t.n+' '+n+'</button>':'';
+    }).join('');
+  const cards=list.slice(0,gshow).map(p=>{
+    const f=frameOf(p),inc=incomeOf(p);
+    const acts=p.off
+      ?'<button class="btn sm" type="button" data-act="restore" data-id="'+p.id+'"'+(S.coins<restoreCost(p)?' disabled':'')+'>Відновити · '+fmt(restoreCost(p))+' ₴</button><button class="btn sm" type="button" data-act="tostate" data-id="'+p.id+'">Державі +'+fmt(Math.round(p.v*0.5))+' ₴</button>'
+      :'<button class="btn sm" type="button" data-act="sell" data-id="'+p.id+'">Продати +'+fmt(sellPrice(p))+' ₴</button>'
+        +(p.due-Date.now()<=2*periodMs(p)?'<button class="btn sm" type="button" data-act="tax" data-id="'+p.id+'"'+(S.coins<taxOf(p)?' disabled':'')+'>'+(p.due-Date.now()<=DAYMS?'Сплатити ':'Наперед ')+fmt(taxOf(p))+' ₴</button>':'');
+    return '<article class="gcard'+(p.off?' offc':'')+'">'+plateHTML(p.c,p.d,p.s,p.t,'',f,p.sp)
+    +'<div class="gfoot"><div class="m"><div class="chips" style="justify-content:flex-start">'+chipHTML(p.t)+(p.off?'<span class="chip off">Знято з обліку</span>':'')+'<span class="reg">'+REGIONS[p.r].n+(p.own?' · свій номер':'')+'</span></div>'+tagsHTML(p.tg)
+    +'<span class="reg">Ринкова ціна '+fmt(p.v)+' ₴'+(f>=0?' · у вітрині ('+FR[f].n+(inc?', +'+fmt(inc)+' ₴/год':'')+')':'')+'</span>'+taxLine(p)+'</div>'
+    +'<div class="acts">'+acts+'</div></div></article>';
+  }).join('');
+  const more=list.length>gshow?'<button class="btn" type="button" data-act="more">Показати ще '+Math.min(30,list.length-gshow)+'</button>':'';
+  const due=taxDue(),dueSum=due.reduce((s,p)=>s+taxOf(p),0),offN=S.garage.filter(p=>p.off).length,ah=S.garage.filter(p=>!p.off&&p.due-Date.now()<=periodMs(p)),ahSum=ah.reduce((s,p)=>s+taxOf(p),0);
+  const taxPanel='<section class="panel" style="display:grid;gap:10px"><p class="h" style="margin:0">Податки</p>'
+    +'<p class="hint">Звичайні, незвичайні й рідкісні номери платять раз на 7 днів, епічні раз на 4 дні, міфічні раз на 3, легендарні раз на 2. Чим кращий номер, тим більший податок. Сплатити можна заздалегідь, не більше ніж на три періоди вперед. Прострочений номер знімається з обліку.</p>'
+    +(due.length?'<button class="btn" type="button" data-act="taxall">Сплатити все, що спливає за добу: '+due.length+' шт. · '+fmt(dueSum)+' ₴</button>':'<p class="note">Найближчих платежів немає.</p>')+(ah.length>due.length?'<button class="btn" type="button" data-act="taxall" data-ahead="1">Сплатити наперед на один період: '+ah.length+' шт. · '+fmt(ahSum)+' ₴</button>':'')
+    +(offN?'<p class="alert">Знято з обліку: '+offN+'. Відновлення коштує 1,5 податку. Можна продати державі за половину ринкової ціни.</p>':'')+'</section>';
+  const over=S.garage.length>=cap();
+  return head
+  +'<div class="cap"><h2>Гараж '+S.garage.length+'/'+cap()+'</h2><p class="hint">Колекція коштує '+fmt(total)+' ₴ за ринковою ціною.'+(over?' Місць немає, генерація призупинена.':'')+'</p><div class="bar" style="margin:0"><i style="width:'+Math.min(100,Math.round(S.garage.length/cap()*100))+'%"></i></div></div>'
+  +taxPanel
+  +(S.garage.length?'<div class="tools"><div class="fchips">'+chips+'</div>'
+    +'<div class="sorts">Порядок: <button class="f" type="button" data-act="sort" data-s="new" aria-pressed="'+(gs==='new')+'">Новіші</button><button class="f" type="button" data-act="sort" data-s="rare" aria-pressed="'+(gs==='rare')+'">Цінніші</button><button class="f" type="button" data-act="sort" data-s="tax" aria-pressed="'+(gs==='tax')+'">За податком</button></div>'
+    +(commons.length>1?'<button class="btn sm" type="button" data-act="sellc">Продати всі звичайні: '+commons.length+' шт. · +'+fmt(cv)+' ₴</button>':'')+'</div>'
+    +'<div class="glist">'+(cards||'<div class="empty">У цьому фільтрі порожньо.</div>')+more+'</div>'
+  :'<div class="empty">Гараж порожній. Згенеруй перший номер на вкладці «Генерація».</div>');
+}
+
+function slotHTML(i){
+  const s=S.slots[i],p=s.pid?S.garage.find(x=>x.id===s.pid):null;
+  let vis;
+  if(s.f<0)vis='<div class="slotE">Слот '+(i+1)+': порожній</div>';
+  else if(p)vis=plateHTML(p.c,p.d,p.s,p.t,'',s.f,p.sp);
+  else vis=emptyFrame(s.f);
+  const inc=p?incomeOf(p):0;
+  const info=s.f<0?'Рамки немає':FR[s.f].n+' рамка'+(p?' · '+TIERS[p.t].n+' номер · +'+fmt(inc)+' ₴/год':' · номера немає');
+  let pick='';
+  if(wallPick&&wallPick.i===i&&wallPick.k==='f'){
+    const bits=FR.map((f,k)=>(S.frames[k]||0)>0?'<button class="f" type="button" data-act="wsetf" data-i="'+i+'" data-f="'+k+'">'+f.n+' ×'+S.frames[k]+'</button>':'').join('');
+    pick='<div class="picker">'+(bits||'<span class="reg">Немає рамок у запасі. Купи їх нижче.</span>')+'</div>';
+  }else if(wallPick&&wallPick.i===i&&wallPick.k==='p'){
+    const cands=S.garage.filter(x=>!x.off&&slotOf(x)<0).sort((a,b)=>b.v-a.v);
+    const bits=cands.slice(0,12).map(x=>'<button class="f" type="button" data-act="wsetp" data-i="'+i+'" data-id="'+x.id+'" style="--rc:var(--r'+x.t+')"><span class="dot"></span>'+x.c+' '+x.d+' '+x.s+'</button>').join('');
+    pick='<div class="picker">'+(bits||'<span class="reg">Немає вільних зареєстрованих номерів.</span>')+'</div>'+(cands.length>12?'<span class="note">Показано 12 найцінніших із '+cands.length+'.</span>':'');
+  }
+  return '<div class="slot">'+vis+'<p class="reg" style="text-align:center">'+info+'</p><div class="btns two"><button class="btn sm" type="button" data-act="wf" data-i="'+i+'">'+(s.f<0?'Обрати рамку':'Змінити рамку')+'</button>'
+    +(s.f>=0?'<button class="btn sm" type="button" data-act="wp" data-i="'+i+'">'+(p?'Змінити номер':'Поставити номер')+'</button>':'<span></span>')+'</div>'
+    +(p?'<button class="btn sm" type="button" data-act="wclr" data-i="'+i+'">Зняти номер із рамки</button>':'')+pick+'</div>';
+}
+function viewFrames(){
+  const shop=FR.map((f,i)=>
+    '<div class="node"><div class="nhead"><h3>'+f.n+' рамка</h3><span>'+(S.frames[i]?'у запасі '+S.frames[i]:'')+'</span></div>'
+    +'<p>Дохід '+fmt(f.inc)+' ₴/год, ще +30% за кожен рівень рідкості номера в ній.</p>'
+    +'<button class="btn sm" type="button" data-act="fbuy" data-f="'+i+'"'+(S.coins<f.price?' disabled':'')+'>Купити · '+fmt(f.price)+' ₴</button></div>').join('');
+  return '<div><h2>Вітрина</h2><p class="hint" style="margin-top:4px">Три слоти. Рамка в слоті й номер у ній приносять гроші. Номер, знятий з обліку, дохід не дає.</p></div>'
+  +'<div class="wall">'+[0,1,2].map(slotHTML).join('')+'</div>'
+  +'<section class="panel" style="display:grid;gap:12px"><div class="price"><span class="h" style="margin:0">Дохід вітрини</span><b>'+fmt(rate())+' ₴/год</b></div>'
+  +'<div class="price"><span class="h" style="margin:0">Накопичено</span><b id="bankAmt">'+fmt(Math.floor(bankNow()))+'</b></div>'
+  +'<button class="btn pri" type="button" data-act="collect"'+(Math.floor(bankNow())<1?' disabled':'')+'>Забрати гроші'+(boostOn()?' ×2':'')+'</button>'
+  +'<p class="note">Накопичується до 8 годин, навіть коли сторінка закрита. Потім потрібно забрати.</p></section>'
+  +'<div><p class="h">Магазин рамок</p><div class="branch">'+shop+'</div></div>';
+}
+let cr={r:0,c:0,d:'4821',a:'K',b:'X'};
+const opts=(arr,sel)=>arr.map((x,i)=>'<option value="'+i+'"'+(i===sel?' selected':'')+'>'+x+'</option>').join('');
+const lopts=sel=>L.map(x=>'<option value="'+x+'"'+(x===sel?' selected':'')+'>'+x+'</option>').join('');
+function viewCreate(){
+  const R=REGIONS[cr.r];
+  return ''
+  +'<div><h2>Свій номер</h2><p class="hint" style="margin-top:4px">Авторський номер коштує в '+OWN_PRICE+' разів більше за ринкову ціну комбінації, зате сам він оцінюється в '+OWN_MULT+' рази дорожче.</p></div>'
+  +'<section class="panel stage" style="padding-bottom:28px"><div id="crPreview"></div><div class="stmeta" id="crMeta"></div></section>'
+  +'<section class="panel"><div class="form">'
+  +'<div class="field full"><label for="crRegion">Регіон</label><select id="crRegion">'+opts(REGIONS.map(x=>x.n),cr.r)+'</select></div>'
+  +'<div class="field"><label for="crCode">Код регіону</label><select id="crCode">'+opts(R.c,cr.c)+'</select></div>'
+  +'<div class="field"><label for="crDigits">Цифри</label><input id="crDigits" inputmode="numeric" maxlength="4" autocomplete="off" value="'+cr.d+'"></div>'
+  +'<div class="field"><label for="crA">Серія, перша літера</label><select id="crA">'+lopts(cr.a)+'</select></div>'
+  +'<div class="field"><label for="crB">Серія, друга літера</label><select id="crB">'+lopts(cr.b)+'</select></div>'
+  +'</div></section>'
+  +'<section class="panel" style="display:grid;gap:12px"><div class="price"><span class="h" style="margin:0">Ціна номера</span><b id="crPrice"></b></div><p class="warn" id="crWarn"></p>'
+  +'<div class="btns"><button class="btn pri" type="button" data-act="buy" id="crBuy">Купити</button><button class="btn" type="button" data-act="rand">Випадкова комбінація</button></div></section>';
+}
+function crState(){
+  const R=REGIONS[cr.r],code=R.c[cr.c],s=cr.a+cr.b,ok=/^\d{4}$/.test(cr.d);
+  const ev=ok?evaluate(code,cr.d,s):{t:0,tg:[]};
+  const base=ok?plateValue(code,cr.d,s,ev.t,ev.tg.length):0, v=base*OWN_MULT, price=ok?custPrice(base):0;
+  const dup=S.garage.some(p=>p.c===code&&p.d===cr.d&&p.s===s);
+  let warn='';
+  if(!ok)warn='Введи чотири цифри.';
+  else if(cr.d==='0000')warn='Номер 0000 не видається.';
+  else if(dup)warn='Такий номер уже є в гаражі.';
+  else if(S.garage.length>=cap())warn='Гараж повний. Продай номер або купи місця у «Прокачці».';
+  else if(S.coins<price)warn='Не вистачає '+fmt(price-S.coins)+' ₴.';
+  return {code,s,ok,ev,v,price,warn,R,can:ok&&!warn};
+}
+function updateCreate(){
+  if(tab!=='garage'||sub.garage!=='create'||!$('#crPreview'))return;
+  const st=crState(),t=st.ev.t;
+  $('#crPreview').innerHTML=plateHTML(st.code,st.ok?cr.d:(cr.d+'––––').slice(0,4),st.s,t);
+  $('#crMeta').innerHTML='<div class="chips">'+chipHTML(t)+'<span class="reg">'+st.R.n+'</span></div>'+tagsHTML(st.ev.tg.map(x=>x.l))+(st.ok?'<p class="val">Оцінка авторського номера <b>'+fmt(st.v)+' ₴</b></p>':'');
+  $('#crPrice').textContent=st.ok?fmt(st.price)+' ₴':'—';
+  $('#crWarn').textContent=st.warn;
+  const b=$('#crBuy');b.disabled=!st.can;b.textContent=st.can?'Купити за '+fmt(st.price)+' ₴':'Купити';
+}
+function viewRegions(){
+  const n=S.regs.length;
+  const tiles=REGIONS.map((R,i)=>{
+    const cnt=S.garage.filter(p=>p.r===i).length,got=S.regs.indexOf(i)>=0;
+    return '<div class="rt'+(got?' got':'')+'"><b>'+R.c[0]+'</b><span>'+R.n+'</span><em>'+(got?(cnt?cnt+' у гаражі':'знайдено'):'ще не знайдено')+'</em></div>';
+  }).join('');
+  return '<div class="prog"><h2>Регіони</h2><p class="hint">Знайдено '+n+' з '+REGIONS.length+'</p><div class="bar"><i style="width:'+Math.round(n/REGIONS.length*100)+'%"></i></div></div><div class="rgrid">'+tiles+'</div>';
+}
+
+function nodeHTML(u){
+  const l=lv(u.k),maxed=l>=u.max,cost=u.cost[l];
+  let lock='';
+  if(u.req&&lv(u.req[0])<u.req[1])lock='Потрібно: '+UNAME[u.req[0]]+' '+u.req[1];
+  const pips='<div class="pips">'+Array.from({length:u.max},(_,i)=>'<i class="'+(i<l?'on':'')+'"></i>').join('')+'</div>';
+  const btn=maxed?'<button class="btn sm" type="button" disabled>Максимальний рівень</button>'
+    :'<button class="btn sm" type="button" data-act="upg" data-k="'+u.k+'"'+((lock||S.coins<cost)?' disabled':'')+'>Покращити · '+fmt(cost)+' ₴</button>';
+  return '<div class="node d'+u.d+(lock?' lock':'')+'"><div class="nhead"><h3>'+u.t+'</h3><span>'+l+'/'+u.max+'</span></div><p>'+u.txt()+'</p>'+(lock?'<p class="req">'+lock+'</p>':'')+pips+btn+'</div>';
+}
+function viewUp(){
+  const g=k=>nodeHTML(UPG.find(u=>u.k===k));
+  return '<div><h2>Прокачка</h2><p class="hint" style="margin-top:4px">Дві гілки розвитку. Нові рівні відкриваються після попередніх.</p></div>'
+  +'<div><p class="h">Гілка «Гараж»</p><div class="branch">'+g('garage')+g('luck')+'</div></div>'
+  +'<div><p class="h">Гілка «Торгівля»</p><div class="branch">'+g('trade')+g('speed')+g('disc')+g('auto')+g('acct')+g('agen')+'</div></div>';
+}
+
+function questRows(Q,weekly){
+  return Q.list.map((q,i)=>{
+    const P=(weekly?WPOOL:QPOOL).find(x=>x.k===q.k),rdy=q.p>=q.g&&!q.c;
+    const need=q.rw.pl!=null&&S.garage.length>=cap();
+    const btn=q.c?'<span class="rw" style="color:var(--mute)">Забрано</span>'
+      :(rdy?'<button class="btn sm pri" type="button" data-act="claim" data-i="'+i+'"'+(weekly?' data-w="1"':'')+(need?' disabled':'')+' style="font-size:14px;min-height:40px">Забрати</button>':'');
+    return '<div class="q'+(q.c?' done':'')+(rdy?' ready':'')+'"><div><h3>'+P.t(q.g)+'</h3><span class="pv">'+fmt(q.p)+' / '+fmt(q.g)+'</span><p class="rwd">Нагорода: '+rwText(q.rw)+'</p>'
+      +(need&&rdy?'<p class="note">Для нагороди потрібне вільне місце в гаражі.</p>':'')+'</div>'+btn
+      +'<div class="bar" style="margin:0"><i style="width:'+Math.round(q.p/q.g*100)+'%"></i></div></div>';
+  }).join('');
+}
+function viewQuest(){
+  const head=segHTML('quest',[['daily','Щоденні'],['week','Тиждень'],['ach','Досягнення']],sub.quest);
+  if(sub.quest==='ach'){
+    const done=ACH.filter(a=>S.ach[a.id]).length;
+    const rows=ACH.map(a=>{
+      const v=Math.min(a.v(),a.g),dn=!!S.ach[a.id];
+      return '<div class="ach'+(dn?' done':'')+'"><span class="ck">'+(dn?'✓':'')+'</span><h3>'+a.t+'</h3><span class="rw">+'+fmt(a.r)+' ₴</span><p>'+a.d+'</p>'
+        +(a.g>1?'<span class="pv">'+fmt(v)+' / '+fmt(a.g)+'</span>':'')+'<div class="bar"><i style="width:'+Math.round(v/a.g*100)+'%"></i></div></div>';
+    }).join('');
+    return head+'<div><h2>Досягнення</h2><p class="hint" style="margin-top:4px">Виконано '+done+' з '+ACH.length+'. За кожне нараховуються гроші й 40 досвіду.</p></div><section class="panel">'+rows+'</section>';
+  }
+  ensureQ();
+  const L1=lvl(),base=50*L1*(L1-1),next=50*(L1+1)*L1,pr=Math.max(0,Math.min(100,Math.round((S.xp-base)/(next-base)*100)));
+  const xp='<section class="panel xp"><div class="me"><span class="h" style="margin:0">Рівень '+L1+'</span><b>'+fmt(S.xp)+' досвіду</b></div><div class="bar" style="margin:0"><i style="width:'+pr+'%"></i></div>'
+    +'<p class="hint">До рівня '+(L1+1)+': '+fmt(next-S.xp)+'. Кожен рівень додає +1% до ціни продажу (до +10%) і дає '+fmt(100*(L1+1))+' ₴.'+(boostOn()?' Бонус ×2 на продаж і збір вітрини: ще '+Math.ceil((S.boost-Date.now())/60000)+' хв.':'')+'</p></section>';
+  if(sub.quest==='week'){
+    const d=new Date(),left=7-((d.getDay()+6)%7);
+    return head+xp+'<div><h2>Завдання тижня</h2><p class="hint" style="margin-top:4px">Нові з\'являються в понеділок, через '+left+' дн. Нагороди багатші: номери з рідкістю, рамки, досвід і бонус ×2.</p></div><section class="panel">'+questRows(S.wq,true)+'</section>';
+  }
+  return head+xp+'<div><h2>Завдання на сьогодні</h2><p class="hint" style="margin-top:4px">Нові з\'являються щодня з опівночі за місцевим часом.</p></div><section class="panel">'+questRows(S.q,false)+'</section>';
+}
+/* ---------- shared db: rating + market ---------- */
+const cloud={st:'init',ro:false};
+let DBX=null,USERX=null,myId=null,board=[],market=[],profCache={},profKey='';
+const mkDone=new Set();let mkBusy=false;
+let rkCat='score',selP=null,bidIn={},mf={pid:'',kind:'fixed',price:'',hours:'6'};
+const CATS=[['score','Капітал',' ₴'],['coins','Гроші',' ₴'],['bv','Найцінніший номер',' ₴'],['n','Колекція',' шт.'],['gen','Згенеровано',''],['regs','Регіони','/27'],['fi','Дохід вітрини',' ₴/год'],['ach','Досягнення','/'+ACH.length],['lvl','Рівень','']];
+const statusMsg=()=>cloud.st==='off'?'Рейтинг і ринок доступні лише гравцям, які увійшли в Claude і мають доступ «Учасник» до цієї сторінки. Решта гри працює без входу.'
+  :cloud.st==='init'?'Завантажую…':cloud.st==='err'?'Не вдалося зв\'язатися зі спільною базою. Спробуй пізніше.':'';
+
+function viewRank(){
+  const my=score();
+  let rank='';
+  if(cloud.st==='ok'&&myId){const sorted=board.slice().sort((a,b)=>(b[rkCat]||0)-(a[rkCat]||0)),i=sorted.findIndex(r=>r.id===myId);if(i>=0)rank=' · місце '+(i+1)+' з '+board.length}
+  let status=statusMsg();
+  if(!status){
+    if(cloud.ro)status='Твій результат не потрапить у список: для запису потрібен доступ «Учасник» до цієї сторінки.';
+    else if(!board.length)status='Поки що в списку нікого. Твій результат з\'явиться за кілька секунд після першої дії в грі.';
+  }
+  const chips='<div class="fchips">'+CATS.map(c=>'<button class="f" type="button" data-act="cat" data-k="'+c[0]+'" aria-pressed="'+(rkCat===c[0])+'">'+c[1]+'</button>').join('')+'</div>';
+  return '<div><h2>Рейтинг</h2><p class="hint" style="margin-top:4px">Обери категорію. Торкнись гравця, щоб побачити його статистику.</p></div>'
+  +chips
+  +'<section class="panel"><div class="me"><span class="h" style="margin:0">Твій капітал'+rank+'</span><b>'+fmt(my)+' ₴</b></div></section>'
+  +(status?'<p class="note">'+status+'</p>':'')
+  +'<section class="panel" id="rankPanel" '+(board.length?'':'hidden')+'><div id="rankList">'+rankRows()+'</div></section>'
+  +'<p class="note">Капітал дорівнює грошам плюс вартості номерів і рамок. У списку гравці, яким відкрито доступ до цієї сторінки з правом «Учасник». Імена беруться з їхніх облікових записів.</p>';
+}
+function wlOf(a){
+  if(!Array.isArray(a))return [];
+  return a.slice(0,3).map(w=>{
+    const sp=safePlate(w);if(!sp)return null;
+    return {c:sp.c,d:sp.d,s:sp.s,t:sp.t,sp:sp.sp,f:Math.max(0,Math.min(4,Math.floor(+(w&&w.f))||0))};
+  }).filter(Boolean);
+}
+function statsHTML(r){
+  const kv=[['Капітал',fmt(r.score)+' ₴'],['Гроші',fmt(r.coins)+' ₴'],['Рівень',fmt(r.lvl||1)],['Номерів у гаражі',fmt(r.n)],['Згенеровано',fmt(r.gen)],['Продано',fmt(r.sold)],['Регіонів',r.regs+'/27'],['Досягнень',r.ach+'/'+ACH.length],['Свої номери',fmt(r.cu)],['Дохід вітрини',fmt(r.fi)+' ₴/год'],['Продано на ринку',fmt(r.ms)]];
+  const wall=r.wl&&r.wl.length?'<div><p class="h">Вітрина</p><div class="wall">'+r.wl.map(w=>plateHTML(w.c,w.d,w.s,w.t,'',w.f,w.sp)).join('')+'</div></div>':'';
+  return '<div class="pstat"><div class="kvs">'+kv.map(x=>'<div><span>'+x[0]+'</span><b>'+x[1]+'</b></div>').join('')+'</div>'+wall
+    +(r.bp?'<div><p class="h">Найцінніший номер</p>'+plateHTML(r.bp.c,r.bp.d,r.bp.s,r.bp.t,'',r.bp.f,r.bp.sp)+'<p class="val" style="text-align:center;margin-top:8px">Ринкова ціна <b>'+fmt(r.bv)+' ₴</b></p></div>':'')+'</div>';
+}
+function rankRows(){
+  const cat=CATS.find(c=>c[0]===rkCat);
+  return board.slice().sort((a,b)=>(b[rkCat]||0)-(a[rkCat]||0)).map((r,i)=>{
+    const pf=profCache[r.id],name=(pf&&pf.name)||'Гравець',mine=r.id===myId;
+    const av=pf&&pf.avatarUrl?'<img alt="" src="'+esc(pf.avatarUrl)+'">':'<span class="av"></span>';
+    const best=(typeof r.best==='number'&&r.best>=0)?chipHTML(Math.min(5,r.best)):'';
+    return '<div class="rkw'+(mine?' mine':'')+'"><button class="rk" type="button" data-act="pl" data-id="'+esc(r.id)+'"><span class="n">'+(i+1)+'</span>'+av+'<span class="who"><b>'+esc(name)+(mine?' (ти)':'')+'</b><span>'+fmt(r.n)+' номерів</span></span><span style="display:grid;gap:4px;justify-items:end"><span class="sc">'+fmt(r[rkCat]||0)+cat[2]+'</span>'+(rkCat==='score'||rkCat==='bv'?best:'')+'</span></button>'
+      +(selP===r.id?statsHTML(r):'')+'</div>';
+  }).join('');
+}
+function paintRank(){
+  const el=$('#rankList');if(!el)return;
+  el.innerHTML=rankRows();const pn=$('#rankPanel');if(pn)pn.hidden=!board.length;
+}
+const editing=()=>{const a=document.activeElement;return !!(a&&/^(INPUT|SELECT|TEXTAREA)$/.test(a.tagName))};
+function softRender(){if(!editing())render()}
+
+/* --- market view --- */
+const mine=()=>market.filter(l=>l.seller===myId&&l.status==='open');
+const minBid=l=>l.bid>0?l.bid+Math.max(1,Math.ceil(l.bid*0.05)):l.price;
+function leftTxt(ms){
+  if(ms<=0)return 'завершено';
+  const m=Math.ceil(ms/60000);
+  return m>=60?Math.floor(m/60)+' г '+(m%60)+' хв':m+' хв';
+}
+function lotHTML(l,isMine){
+  const p=l.plate,pf=profCache[l.seller],who=(pf&&pf.name)||'Гравець',auc=l.kind==='auction';
+  const left=auc?l.ends-Date.now():0;
+  let info,act='';
+  if(auc){
+    info='<span class="reg">Аукціон · '+(l.bid>0?'ставка '+fmt(l.bid)+' ₴ ('+l.bids+')':'старт '+fmt(l.price)+' ₴')+' · '+(left>0?'ще '+leftTxt(left):'завершується')+'</span>';
+    if(isMine){act=l.bidder?'<button class="btn sm" type="button" disabled>Є ставки</button>':'<button class="btn sm" type="button" data-act="cancel" data-id="'+l.id+'">Зняти з аукціону</button>'}
+    else if(left>0){
+      const mb=minBid(l),val=bidIn[l.id]!=null?bidIn[l.id]:mb;
+      act='<div class="mini"><input id="bid_'+l.id+'" inputmode="numeric" value="'+esc(val)+'" aria-label="Ставка"><button class="btn sm" type="button" data-act="bid" data-id="'+l.id+'">Ставка</button></div><span class="note">Мінімум '+fmt(mb)+' ₴'+(l.bidder===myId?' · зараз веде твоя ставка':'')+'</span>';
+    }
+  }else{
+    info='<span class="reg">Ціна <b style="color:var(--yellow);font-family:var(--f-plate);font-size:20px">'+fmt(l.price)+' ₴</b></span>';
+    act=isMine?'<button class="btn sm" type="button" data-act="cancel" data-id="'+l.id+'">Зняти з продажу</button>'
+      :'<button class="btn sm pri" type="button" style="font-size:15px;min-height:44px" data-act="buylot" data-id="'+l.id+'"'+((S.coins<l.price||S.garage.length>=cap())?' disabled':'')+'>Купити за '+fmt(l.price)+' ₴</button>';
+  }
+  return '<article class="gcard">'+platePH(p)+'<div class="gfoot"><div class="m"><div class="chips" style="justify-content:flex-start">'+chipHTML(p.t)+'<span class="reg">'+REGIONS[p.r].n+(p.own?' · авторський':'')+'</span></div>'+tagsHTML(p.tg)+info+'<span class="reg">Продавець: '+esc(isMine?'ти':who)+' · оцінка '+fmt(p.v)+' ₴</span></div></div>'+act+'</article>';
+}
+function viewMarket(){
+  const head=segHTML('market',[['browse','Лоти'],['mine','Мої лоти і продаж']],sub.market);
+  const st=statusMsg();
+  if(st)return head+'<p class="note">'+st+'</p>';
+  if(cloud.ro)return head+'<p class="alert">Для ринку потрібен доступ «Учасник» до цієї сторінки. Попроси власника змінити рівень доступу в меню «Поділитися».</p>';
+  if(sub.market==='mine'){
+    const my=mine();
+    const options='<option value="">Обери номер</option>'+S.garage.filter(p=>!p.off).map(p=>'<option value="'+p.id+'"'+(String(p.id)===String(mf.pid)?' selected':'')+'>'+p.c+' '+p.d+' '+p.s+' · '+TIERS[p.t].n+'</option>').join('');
+    const sel=S.garage.find(p=>String(p.id)===String(mf.pid));
+    const form='<section class="panel" style="display:grid;gap:12px"><p class="h" style="margin:0">Виставити номер</p><div class="form">'
+      +'<div class="field full"><label for="mfPlate">Номер із гаража</label><select id="mfPlate">'+options+'</select></div>'
+      +'<div class="field"><label for="mfKind">Тип</label><select id="mfKind"><option value="fixed"'+(mf.kind==='fixed'?' selected':'')+'>Фіксована ціна</option><option value="auction"'+(mf.kind==='auction'?' selected':'')+'>Аукціон</option></select></div>'
+      +'<div class="field"><label for="mfPrice">'+(mf.kind==='auction'?'Стартова ціна, ₴':'Ціна, ₴')+'</label><input id="mfPrice" inputmode="numeric" value="'+esc(mf.price)+'" placeholder="'+(sel?sel.v:'')+'"></div>'
+      +(mf.kind==='auction'?'<div class="field full"><label for="mfHours">Тривалість</label><select id="mfHours">'+[1,6,24].map(h=>'<option value="'+h+'"'+(String(mf.hours)===String(h)?' selected':'')+'>'+h+' год</option>').join('')+'</select></div>':'')
+      +'</div><p class="note">'+(sel?'Ринкова оцінка цього номера: '+fmt(sel.v)+' ₴. ':'')+'Комісія ринку 5% від ціни продажу. Рамка з номера повернеться у твій запас. Не більше 6 активних лотів.</p>'
+      +'<button class="btn pri" type="button" data-act="list">Виставити лот</button></section>';
+    const lots=my.length?'<div class="glist">'+my.map(l=>lotHTML(l,true)).join('')+'</div>':'<div class="empty">Активних лотів немає.</div>';
+    return head+form+'<div><h2>Мої лоти</h2></div>'+lots;
+  }
+  const f=mkF;
+  const chips='<div class="fchips">'+[['all','Усі'],['fixed','Фіксована ціна'],['auction','Аукціони']].map(x=>'<button class="f" type="button" data-act="mkf" data-k="'+x[0]+'" aria-pressed="'+(f===x[0])+'">'+x[1]+'</button>').join('')+'</div>';
+  let list=market.filter(l=>l.status==='open'&&l.seller!==myId&&(f==='all'||l.kind===f)&&(l.kind==='fixed'||l.ends>Date.now()));
+  list.sort((a,b)=>a.kind==='auction'&&b.kind==='auction'?a.ends-b.ends:b.created-a.created);
+  return head+'<div><h2>Ринок номерів</h2><p class="hint" style="margin-top:4px">Купуй номери інших гравців або бери участь в аукціонах. Ставки не заморожують гроші: переможець платить у момент розрахунку.</p></div>'+chips
+    +(list.length?'<div class="glist">'+list.map(l=>lotHTML(l,false)).join('')+'</div>':'<div class="empty">Лотів поки немає. Вистав свій номер у розділі «Мої лоти і продаж».</div>');
+}
+let mkF='all';
+
+/* --- db wiring --- */
+function loadProfiles(){
+  if(!USERX)return;
+  const ids=[];board.forEach(b=>ids.push(b.id));market.forEach(l=>{ids.push(l.seller);if(l.bidder)ids.push(l.bidder)});
+  const u=Array.from(new Set(ids)),key=u.join(',');
+  if(!u.length||key===profKey)return;
+  profKey=key;
+  USERX.profiles(u).then(ps=>{profCache=ps;paintRank();if(tab==='market')softRender()});
+}
+function normLot(id,x){
+  if(!x)return null;
+  const plate=safePlate(x.plate);if(!plate)return null;
+  return {id,seller:String(x.seller||''),kind:x.kind==='auction'?'auction':'fixed',plate,price:num(x.price),bid:num(x.bid),bidder:x.bidder?String(x.bidder):null,bids:num(x.bids),ends:num(x.ends),status:String(x.status||''),fin:num(x.fin),created:num(x.created)};
+}
+function initCloud(){
+  if(!window.claude||!claude.use){cloud.st='off';return}
+  Promise.all([claude.use('user'),claude.use('db')]).then(async r=>{
+    USERX=r[0];DBX=r[1];
+    if(!DBX){cloud.st='off';if(tab==='rank'||tab==='market')render();return}
+    if(USERX){myId=await USERX.id();const w=await USERX.can('data.write');cloud.ro=(w===false)}
+    cloud.st='ok';
+    const timer=setTimeout(()=>{if(cloud.st==='init'){cloud.st='err';if(tab==='rank'||tab==='market')render()}},10000);
+    DBX.collection('board').limit(300).onSnapshot(snap=>{
+      clearTimeout(timer);
+      board=snap.docs.map(d=>{
+        const x=d.data()||{},bp0=x.bp&&safePlate(x.bp);
+        return {id:d.id,score:num(x.score),coins:num(x.coins),n:num(x.n),gen:num(x.gen),sold:num(x.sold),ach:num(x.ach),regs:num(x.regs),best:typeof x.best==='number'?Math.max(-1,Math.min(5,Math.floor(x.best))):-1,bv:num(x.bv),fi:num(x.fi),cu:num(x.cu),ms:num(x.ms),lvl:num(x.lvl),wl:wlOf(x.wl),
+          bp:bp0?{c:bp0.c,d:bp0.d,s:bp0.s,t:bp0.t,sp:bp0.sp,f:Math.max(-1,Math.min(4,Math.floor(+x.bp.f)||-1))}:null};
+      });
+      cloud.st='ok';loadProfiles();
+      if(tab==='rank')softRender();
+    },()=>{clearTimeout(timer);cloud.st='err';if(tab==='rank'||tab==='market')render()});
+    DBX.collection('market').limit(300).onSnapshot(snap=>{
+      market=snap.docs.map(d=>normLot(d.id,d.data())).filter(Boolean);
+      loadProfiles();mkProcess();
+      if(tab==='market')softRender();
+    },()=>{});
+    doPush();
+    if(tab==='rank'||tab==='market')render();
+  }).catch(()=>{cloud.st='off'});
+}
+let pushT=null,pushing=false,lastKey='';
+function myStats(){
+  let bv=0,bp=null;
+  S.garage.forEach(p=>{if(p.v>bv){bv=p.v;bp={c:p.c,d:p.d,s:p.s,t:p.t,f:frameOf(p),sp:p.sp||null}}});
+  const wl=S.slots.map(s=>{
+    const p=s.pid&&s.f>=0?S.garage.find(x=>x.id===s.pid):null;
+    return p?{c:p.c,d:p.d,s:p.s,f:s.f,own:p.own?1:0,sp:p.sp||null}:null;
+  }).filter(Boolean);
+  return {score:score(),coins:S.coins,n:S.garage.length,gen:S.gen,sold:S.sold,ach:Object.keys(S.ach).length,regs:S.regs.length,best:S.best,bv,bp,fi:Math.round(rate()),cu:S.custom,ms:S.mk.sold,lvl:lvl(),wl};
+}
+function schedulePush(){
+  if(!DBX||!myId||cloud.ro)return;
+  clearTimeout(pushT);pushT=setTimeout(doPush,4000);
+}
+async function doPush(){
+  if(!DBX||!myId||cloud.ro)return;
+  if(pushing){schedulePush();return}
+  const st=myStats(),key=JSON.stringify(st);
+  if(key===lastKey)return;
+  pushing=true;
+  try{st.t=Date.now();await DBX.doc('board/'+myId).set(st);lastKey=key}
+  catch(e){if(e&&e.code==='invalid_argument'){cloud.ro=true;if(tab==='rank'||tab==='market')render()}}
+  finally{pushing=false}
+}
+
+/* --- market actions --- */
+const DAY=24*3600e3;
+async function withLease(id,fn){
+  const ref=DBX.doc('market/'+id);
+  const lease=await ref.acquire({holder:myId,ttlMs:8000});
+  if(!lease.acquired){toast('Лот зараз оновлює інший гравець. Спробуй ще раз.');return}
+  const snap=await ref.get();
+  if(!snap.exists){toast('Лот уже недоступний.');return}
+  const l=normLot(id,snap.data());
+  if(!l){toast('Лот пошкоджений.');return}
+  return fn(ref,l);
+}
+async function createListing(){
+  if(!DBX||!myId||cloud.ro){toast('Для ринку потрібен доступ «Учасник».');return}
+  const p=S.garage.find(x=>String(x.id)===String(mf.pid));
+  const price=Math.floor(+mf.price);
+  if(!p){toast('Обери номер із гаража.');return}
+  if(p.off){toast('Номер знято з обліку. Спершу відновити його в гаражі.');return}
+  if(!(price>=1)||price>1e9){toast('Вкажи ціну від 1 ₴.');return}
+  if(mine().length>=6){toast('Забагато активних лотів. Максимум 6.');return}
+  const hours=[1,6,24].indexOf(+mf.hours)>=0?+mf.hours:6,kind=mf.kind==='auction'?'auction':'fixed';
+  const id=String(myId).slice(-8)+Date.now().toString(36)+ri(1296).toString(36);
+  const doc={seller:myId,kind,plate:{c:p.c,d:p.d,s:p.s,own:p.own?1:0,sp:p.sp||null},price,bid:0,bidder:null,bids:0,ends:kind==='auction'?Date.now()+hours*3600e3:0,status:'open',created:Date.now()};
+  try{await DBX.doc('market/'+id).set(doc)}catch(e){toast('Не вдалося виставити лот.');return}
+  settle();releaseFrame(p);
+  S.garage=S.garage.filter(x=>x.id!==p.id);if(S.cur===p.id)S.cur=null;
+  mf.pid='';mf.price='';
+  save();toast('Лот виставлено: '+p.c+' '+p.d+' '+p.s,true);render();
+}
+async function cancelLot(id){
+  if(!DBX||!myId)return;
+  try{
+    await withLease(id,async(ref,l)=>{
+      if(l.seller!==myId||l.status!=='open'||l.bidder){toast('Цей лот зняти не можна.');return}
+      await ref.delete();
+      toGarage(Object.assign({},l.plate,{fr:null}));save();toast('Номер повернуто в гараж.');render();
+    });
+  }catch(e){toast('Не вдалося зняти лот.')}
+}
+async function buyLot(id){
+  if(!DBX||!myId||cloud.ro){toast('Для ринку потрібен доступ «Учасник».');return}
+  try{
+    await withLease(id,async(ref,l)=>{
+      if(l.status!=='open'||l.kind!=='fixed'){toast('Лот уже недоступний.');return}
+      if(l.seller===myId){toast('Це твій лот.');return}
+      if(S.coins<l.price){toast('Не вистачає грошей.');return}
+      if(S.garage.length>=cap()){toast('У гаражі немає місця.');return}
+      await ref.update({status:'sold',buyer:myId,fin:l.price});
+      S.coins-=l.price;S.mk.bought++;qAdd('mkt',1);discover(l.plate);toGarage(Object.assign({},l.plate,{fr:null}));
+      check();save();toast('Куплено '+l.plate.c+' '+l.plate.d+' '+l.plate.s,true);render();
+    });
+  }catch(e){toast('Не вдалося купити лот.')}
+}
+async function placeBid(id){
+  if(!DBX||!myId||cloud.ro){toast('Для ринку потрібен доступ «Учасник».');return}
+  const amt=Math.floor(+(bidIn[id]!=null?bidIn[id]:0));
+  try{
+    await withLease(id,async(ref,l)=>{
+      if(l.status!=='open'||l.kind!=='auction'||l.ends<=Date.now()){toast('Аукціон завершено.');return}
+      if(l.seller===myId){toast('Це твій лот.');return}
+      if(!(amt>=minBid(l))){toast('Мінімальна ставка: '+fmt(minBid(l))+' ₴.');return}
+      if(S.coins<amt){toast('Не вистачає грошей на таку ставку.');return}
+      await ref.update({bid:amt,bidder:myId,bids:l.bids+1});
+      delete bidIn[id];toast('Ставку '+fmt(amt)+' ₴ прийнято.',true);
+    });
+  }catch(e){toast('Не вдалося зробити ставку.')}
+}
+/* дії, які гра виконує сама: виплата продавцю, повернення номера, розрахунок переможця */
+async function mkProcess(){
+  if(mkBusy||!DBX||!myId||cloud.ro)return;
+  mkBusy=true;
+  try{
+    const now=Date.now();
+    for(const l of market.slice()){
+      const key=l.id+':'+l.status+':'+l.bid;
+      if(mkDone.has(key))continue;
+      const ref=DBX.doc('market/'+l.id);
+      if(l.seller===myId){
+        if(l.status==='sold'){
+          mkDone.add(key);
+          await ref.delete();
+          const g=Math.floor((l.fin||l.price)*0.95);
+          S.coins+=g;S.mk.sold++;qAdd('mkt',1);check();save();toast('Лот продано · +'+fmt(g)+' ₴ (після комісії)',true);softRender();
+        }else if(l.status==='failed'||(l.status==='open'&&l.kind==='auction'&&((l.ends<now&&!l.bidder)||(l.bidder&&l.ends+DAY<now)))){
+          mkDone.add(key);
+          await ref.delete();
+          toGarage(Object.assign({},l.plate,{fr:null}));save();toast('Номер повернуто з ринку в гараж.');softRender();
+        }
+      }else if(l.status==='open'&&l.kind==='auction'&&l.ends<now&&l.bidder===myId){
+        mkDone.add(key);
+        await claimWin(l.id);
+      }
+    }
+  }catch(e){}
+  finally{mkBusy=false}
+}
+async function claimWin(id){
+  await withLease(id,async(ref,l)=>{
+    if(l.status!=='open'||l.bidder!==myId||l.ends>=Date.now())return;
+    if(S.coins>=l.bid){
+      await ref.update({status:'sold',buyer:myId,fin:l.bid});
+      S.coins-=l.bid;S.mk.bought++;qAdd('mkt',1);discover(l.plate);toGarage(Object.assign({},l.plate,{fr:null}));
+      check();save();toast('Виграно аукціон: '+l.plate.c+' '+l.plate.d+' '+l.plate.s,true);softRender();
+    }else{
+      await ref.update({status:'failed'});
+      toast('Аукціон виграно, але не вистачило грошей. Номер повернуто продавцю.');
+    }
+  });
+}
+
+/* ---------- shell ---------- */
+const VIEWS={gen:viewGen,garage:viewGarage,up:viewUp,quest:viewQuest,market:viewMarket,rank:viewRank};
+const ICONS={
+  gen:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  garage:'<path d="M3 10 12 4l9 6v10H3z"/><path d="M7 20v-6h10v6"/>',
+  up:'<path d="M12 20V6M6 12l6-6 6 6"/>',
+  quest:'<path d="M5 6l2 2 3-3M5 14l2 2 3-3M14 7h6M14 15h6"/>',
+  market:'<path d="M4 8h16l-1.5 4h-13zM6 12v8h12v-8M10 20v-4h4v4"/>',
+  rank:'<path d="M5 20v-8M12 20V5M19 20V9"/>'
+};
+const NAMES={gen:'Генерація',garage:'Гараж',up:'Прокачка',quest:'Завдання',market:'Ринок',rank:'Рейтинг'};
+function renderNav(){
+  const c=claimable();
+  $('#nav').innerHTML=Object.keys(NAMES).map(k=>
+    '<button type="button" data-act="tab" data-tab="'+k+'"'+(k===tab?' aria-current="page"':'')+'><svg viewBox="0 0 24 24" aria-hidden="true">'+ICONS[k]+'</svg>'+NAMES[k]+(k==='quest'&&c?'<em class="bdg">'+c+'</em>':'')+(k==='garage'&&taxWarn()?'<em class="bdg">'+taxWarn()+'</em>':'')+'</button>'
+  ).join('');
+}
+function tickBtn(){
+  const b=$('#genBtn');if(!b)return;
+  const left=cdUntil-Date.now();
+  clearTimeout(cdTimer);
+  if(busy){b.disabled=true;b.textContent='Генерую…';return}
+  if(S.garage.length>=cap()){b.disabled=true;b.textContent='Гараж повний '+S.garage.length+'/'+cap();return}
+  if(left>0){b.disabled=true;b.textContent='Зачекай '+(left/1000).toFixed(1)+' с';cdTimer=setTimeout(tickBtn,100)}
+  else{b.disabled=false;b.textContent='Згенерувати номер'}
+}
+function render(){
+  $('#coins').textContent=fmt(S.coins);hdr();
+  $('#view').innerHTML=VIEWS[tab]();
+  renderNav();updateCreate();tickBtn();
+}
+
+function arm(btn,label,fn){
+  if(btn.dataset.armed){fn();return}
+  btn.dataset.armed='1';btn.dataset.old=btn.textContent;btn.textContent=label;btn.classList.add('arm');
+  setTimeout(()=>{
+    if(btn.isConnected&&btn.dataset.armed){delete btn.dataset.armed;btn.textContent=btn.dataset.old;btn.classList.remove('arm')}
+  },3000);
+}
+
+function generate(silent){
+  if(!canGen())return;
+  busy=true;tmp=null;tickBtn();
+  const host=$('#host'),final=makePlate();
+  const reduce=silent||(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches);
+  let n=0;const total=reduce?0:11;
+  function step(){
+    if(n++<total){
+      if(host&&host.isConnected)host.innerHTML=plateHTML(pick(REGIONS[ri(REGIONS.length)].c),rdg(4),rs(),0,'roll');
+      setTimeout(step,55);
+    }else commit(final);
+  }
+  step();
+}
+function commit(p){
+  S.gen++;qAdd('gen',1);S.cnt[p.t]++;addXp(1+[0,2,8,30,100,400][p.t]);if(p.t>=3)qAdd('epic',1);
+  if(p.t>=1)qAdd('unc',1);
+  if(p.t>=2)qAdd('rare',1);
+  discover(p);
+  if(S.auto&&p.t<lv('auto')){
+    const g=payout(p);tmp={p,gain:g};S.cur=null;
+  }else{
+    toGarage(p);S.cur=p.id;
+  }
+  check();save();busy=false;cdUntil=Date.now()+cdMs();
+  if(p.t>=2)toast(TIERS[p.t].n+' номер: '+p.c+' '+p.d+' '+p.s,true);
+  if(tab==='gen'){render();const pl=$('#host .plate');if(pl)pl.classList.add('pop')}
+  else{softRender()}
+}
+let nextAuto=0;
+function autogenTick(){
+  const l=lv('agen');if(!l||!S.agen||!canGen())return;
+  if(Date.now()<nextAuto)return;
+  nextAuto=Date.now()+[10000,6000,3000][l-1];
+  generate(true);
+}
+
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b||b.disabled)return;
+  const a=b.dataset.act;
+  if(a==='tab'){tab=b.dataset.tab;gshow=30;render();window.scrollTo(0,0)}
+  else if(a==='sub'){sub[b.dataset.g]=b.dataset.k;render()}
+  else if(a==='gen')generate(false);
+  else if(a==='autotoggle'){S.auto=!S.auto;save();render()}
+  else if(a==='agentoggle'){S.agen=!S.agen;save();render()}
+  else if(a==='apaytoggle'){S.apay=!S.apay;save();render()}
+  else if(a==='sell'){
+    const id=+b.dataset.id,p=S.garage.find(x=>x.id===id);if(!p)return;
+    const go=()=>{sellGarage(id);render()};
+    if(p.off)return;
+    if(p.t>=2||slotOf(p)>=0)arm(b,'Точно продати?',go);else go();
+  }
+  else if(a==='sellc'){
+    arm(b,'Підтвердити продаж?',()=>{
+      settle();
+      const keep=[];let gain=0,cnt=0;
+      S.garage.forEach(p=>{if(p.t===0&&!p.off){releaseFrame(p);gain+=payout(p);cnt++}else keep.push(p)});
+      S.garage=keep;
+      if(!S.garage.some(p=>p.id===S.cur))S.cur=null;
+      check();save();toast('Продано '+cnt+' звичайних · +'+fmt(gain)+' ₴');render();
+    });
+  }
+  else if(a==='filter'){gf=+b.dataset.t;gshow=30;render()}
+  else if(a==='sort'){gs=b.dataset.s;render()}
+  else if(a==='more'){gshow+=30;render()}
+  else if(a==='wf'||a==='wp'){
+    const i=+b.dataset.i,k=a==='wf'?'f':'p';
+    wallPick=(wallPick&&wallPick.i===i&&wallPick.k===k)?null:{i,k};render();
+  }
+  else if(a==='wsetf'){setFrame(+b.dataset.i,+b.dataset.f);check();save();render()}
+  else if(a==='wsetp'){setPlate(+b.dataset.i,+b.dataset.id);check();save();render()}
+  else if(a==='wclr'){const s=S.slots[+b.dataset.i];if(s&&s.pid){settle();s.pid=null;save();render()}}
+  else if(a==='tax'){payTax(+b.dataset.id);render()}
+  else if(a==='taxall'){payAllTax(!!b.dataset.ahead);render()}
+  else if(a==='restore'){restorePlate(+b.dataset.id);render()}
+  else if(a==='tostate'){
+    const id=+b.dataset.id,p=S.garage.find(x=>x.id===id);if(!p||!p.off)return;
+    const go=()=>{stateSell(id);render()};
+    if(p.t>=2)arm(b,'Точно продати державі?',go);else go();
+  }
+  else if(a==='fbuy'){
+    const f=+b.dataset.f;if(S.coins<FR[f].price)return;
+    S.coins-=FR[f].price;S.frames[f]=(S.frames[f]||0)+1;S.fb++;check();save();toast(FR[f].n+' рамка куплена',true);render();
+  }
+  else if(a==='collect'){
+    settle();const raw=Math.floor(S.bank);
+    if(raw>=1){
+      const g=raw*(boostOn()?2:1);
+      S.bank-=raw;S.coins+=g;S.fcol+=g;check();save();
+      toast('Зібрано з вітрини · +'+fmt(g)+' ₴',boostOn());render();
+    }
+  }
+  else if(a==='rand'){cr.r=ri(REGIONS.length);cr.c=ri(REGIONS[cr.r].c.length);cr.d=rdg(4);cr.a=pick(L);cr.b=pick(L);render()}
+  else if(a==='buy'){
+    const st=crState();if(!st.can)return;
+    S.coins-=st.price;S.custom++;
+    const p={c:st.code,d:cr.d,s:st.s,t:st.ev.t,r:cr.r,tg:st.ev.tg.map(x=>x.l),v:st.v,own:1};
+    discover(p);toGarage(p);qAdd('custom',1);check();save();
+    toast('Номер '+st.code+' '+cr.d+' '+st.s+' тепер у гаражі.',true);render();
+  }
+  else if(a==='upg'){
+    const u=UPG.find(x=>x.k===b.dataset.k);if(!u)return;
+    const l=lv(u.k);
+    if(l>=u.max)return;
+    if(u.req&&lv(u.req[0])<u.req[1])return;
+    const c=u.cost[l];if(S.coins<c)return;
+    S.coins-=c;S.up[u.k]=l+1;check();save();
+    toast(u.t+': рівень '+(l+1),true);render();
+  }
+  else if(a==='claim'){
+    ensureQ();
+    const Q=b.dataset.w?S.wq:S.q,q=Q.list[+b.dataset.i];
+    if(q&&q.p>=q.g&&!q.c){
+      if(q.rw.pl!=null&&S.garage.length>=cap()){toast('Для нагороди потрібне вільне місце в гаражі.');return}
+      q.c=1;if(b.dataset.w)S.wd++;else S.qd++;
+      giveReward(q.rw);check();save();
+      toast('Нагорода: '+rwText(q.rw),true);render();
+    }
+  }
+  else if(a==='cat'){rkCat=b.dataset.k;selP=null;render()}
+  else if(a==='pl'){selP=(selP===b.dataset.id)?null:b.dataset.id;paintRank()}
+  else if(a==='mkf'){mkF=b.dataset.k;render()}
+  else if(a==='list')createListing();
+  else if(a==='cancel')cancelLot(b.dataset.id);
+  else if(a==='buylot')buyLot(b.dataset.id);
+  else if(a==='bid')placeBid(b.dataset.id);
+});
+document.addEventListener('change',e=>{
+  const id=e.target.id;
+  if(id==='crRegion'){cr.r=+e.target.value;cr.c=0;render()}
+  else if(id==='crCode'){cr.c=+e.target.value;updateCreate()}
+  else if(id==='crA'){cr.a=e.target.value;updateCreate()}
+  else if(id==='crB'){cr.b=e.target.value;updateCreate()}
+  else if(id==='mfPlate'){mf.pid=e.target.value;const p=S.garage.find(x=>String(x.id)===String(mf.pid));if(p&&!mf.price)mf.price=String(p.v);render()}
+  else if(id==='mfKind'){mf.kind=e.target.value;render()}
+  else if(id==='mfHours'){mf.hours=e.target.value}
+});
+document.addEventListener('input',e=>{
+  const id=e.target.id||'';
+  if(id==='crDigits'){
+    const v=e.target.value.replace(/\D/g,'').slice(0,4);
+    if(v!==e.target.value)e.target.value=v;
+    cr.d=v;updateCreate();
+  }else if(id==='mfPrice'){
+    const v=e.target.value.replace(/\D/g,'').slice(0,10);
+    if(v!==e.target.value)e.target.value=v;
+    mf.price=v;
+  }else if(id.indexOf('bid_')===0){
+    const v=e.target.value.replace(/\D/g,'').slice(0,10);
+    if(v!==e.target.value)e.target.value=v;
+    bidIn[id.slice(4)]=v;
+  }
+});
+
+setInterval(()=>{
+  const el=$('#bankAmt');if(el)el.textContent=fmt(Math.floor(bankNow()));
+  autogenTick();taxTick();hdr();
+},1000);
+setInterval(()=>{mkProcess();if(tab==='market')softRender()},20000);
+
+ensureQ();taxTick();check();save();render();initCloud();
+})();
+</script>
+
+</body></html>
